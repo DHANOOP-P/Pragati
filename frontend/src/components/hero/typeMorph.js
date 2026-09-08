@@ -77,15 +77,6 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
   }
   return { canvas: off, pts, cssW, cssH, font: drawFont, drawX };
 };
-  const { data, width, height } = c.getImageData(0, 0, off.width, off.height);
-  const pts = [];
-  for (let y = 0; y < height; y += gap) {
-    for (let x = 0; x < width; x += gap) {
-      if (data[(y * width + x) * 4 + 3] > 132) pts.push({ x: x / dpr, y: y / dpr });
-    }
-  }
-  return { canvas: off, pts, cssW, cssH };
-};
 
 const takeEven = (pts, n) => {
   if (pts.length <= n) return pts.slice();
