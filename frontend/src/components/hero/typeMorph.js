@@ -48,15 +48,22 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
       return c.measureText(text);
     };
     let metrics = fit(fontSize);
-    const advance = metrics.width || 1;
-    if (advance > cssW * 0.92) {
-      fontSize *= (cssW * 0.92) / advance;
+    let advance = metrics.width || 1;
+    const maxW = cssW * 0.96;
+    const targetW = cssW * 0.92;
+    if (advance > maxW) {
+      fontSize *= maxW / advance;
       metrics = fit(fontSize);
+      advance = metrics.width || 1;
+    } else if (advance > 8 && advance < targetW * 0.9) {
+      fontSize *= targetW / advance;
+      metrics = fit(fontSize);
+      advance = metrics.width || 1;
     }
     const inkH =
       (metrics.actualBoundingBoxAscent || fontSize * 0.8) + (metrics.actualBoundingBoxDescent || fontSize * 0.25);
-    if (inkH > cssH * 0.9) {
-      fontSize *= (cssH * 0.9) / inkH;
+    if (inkH > cssH * 0.98 && inkH > 0) {
+      fontSize *= (cssH * 0.98) / inkH;
       metrics = fit(fontSize);
     }
     drawFont = font.replace(/(\d+(?:\.\d+)?)px/, `${fontSize}px`);
