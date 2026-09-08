@@ -1,0 +1,97 @@
+.admin-gates {
+  margin-top: 2rem;
+}
+
+.admin-gates > p {
+  margin: 0 0 0.9rem;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #c45c2d;
+}
+
+.admin-gates-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-gates-list button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.15rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(243, 236, 224, 0.12);
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-gates-list button.is-on {
+  border-color: rgba(215, 181, 109, 0.45);
+}
+
+.admin-gates-list button span:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.admin-gates-list b {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.admin-gates-list i {
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9a9084;
+}
+
+.admin-gates-list button.is-on i {
+  color: #d7b56d;
+}
+
+.admin-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.7rem;
+  height: 1.45rem;
+  border: 1px solid rgba(243, 236, 224, 0.22);
+  border-radius: 999px;
+  background: rgba(243, 236, 224, 0.06);
+}
+
+.admin-switch span {
+  position: absolute;
+  top: 0.16rem;
+  left: 0.16rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: #9a9084;
+  transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.admin-gates-list button.is-on .admin-switch {
+  border-color: rgba(215, 181, 109, 0.7);
+  background: rgba(215, 181, 109, 0.16);
+}
+
+.admin-gates-list button.is-on .admin-switch span {
+  transform: translateX(1.2rem);
+  background: #d7b56d;
+}
+
+@media (min-width: 768px) {
+  .admin-gates-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

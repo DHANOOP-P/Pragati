@@ -1,0 +1,45 @@
+.current-band {
+  position: relative;
+  z-index: 20;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: min(100svh, 54rem);
+}
+
+.current-band-scene {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.current-band-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.current-band-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: inherit;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.current-band .relative.z-20 {
+  z-index: 1;
+}
+
+@media (max-width: 767px) {
+  .current-band {
+    min-height: 100svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current-band-scene {
+    opacity: 0.55;
+  }
+}

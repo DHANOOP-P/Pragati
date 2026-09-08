@@ -1,0 +1,22 @@
+# Deploy from this folder: cd backend && fly launch && fly deploy
+# Rename `app` if fly.io says the name is taken.
+
+app = "pragati-api"
+primary_region = "bom"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[env]
+  PORT = "8080"

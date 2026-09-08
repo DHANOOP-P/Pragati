@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #000000;
+  --color-ink: #100e14;
+  --color-paper: #f3ece0;
+  --color-mute: #9a9084;
+  --color-gold: #d7b56d;
+  --color-ember: #c45c2d;
+  --color-bloom: #7a3e5d;
+  --font-display: "Syne", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-malayalam: "Baloo Chettan 2", "Noto Sans Malayalam", serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #000000;
+  color: #f3ece0;
+}
+
+body {
+  font-family: var(--font-display);
+  cursor: auto;
+}
+
+body.has-cursor,
+body.has-cursor * {
+  cursor: none;
+}
+
+body.is-booting footer {
+  display: none;
+}
+
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  background: radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+.river {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.river::-webkit-scrollbar {
+  height: 4px;
+}
+
+.river::-webkit-scrollbar-thumb {
+  background: #d7b56d;
+}
+
+.river > * {
+  scroll-snap-align: start;
+  flex: 0 0 min(86vw, 720px);
+}
+
+@keyframes drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.marquee {
+  animation: drift 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee,
+  .grain,
+  .stage-ticker-track.is-moving {
+    animation: none;
+  }
+}
+
+:focus-visible {
+  outline: 1px solid #d7b56d;
+  outline-offset: 4px;
+}
+
+.idea-word {
+  opacity: var(--idea-in, 0);
+}
+
+.idea-kicker,
+.idea-note {
+  opacity: var(--idea-copy, 0);
+}
+
+.idea-stage {
+  background: radial-gradient(ellipse at 50% 58%, rgba(196, 92, 45, 0.2), transparent 64%);
+}
+
+.idea-stage-canvas {
+  cursor: grab;
+}
+
+.idea-stage-canvas:active {
+  cursor: grabbing;
+}
+
+.idea-section.is-static .idea-word,
+.idea-section.is-static .idea-kicker,
+.idea-section.is-static .idea-note {
+  opacity: 1;
+}

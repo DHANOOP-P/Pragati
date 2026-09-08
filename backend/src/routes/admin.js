@@ -1,0 +1,280 @@
+import { Router } from "express";
+import path from "path";
+import ArtsEvent from "../models/ArtsEvent.js";
+import Workshop from "../models/Workshop.js";
+import Proshow from "../models/Proshow.js";
+import Ad from "../models/Ad.js";
+import Winner from "../models/Winner.js";
+import PreEvent from "../models/PreEvent.js";
+import House from "../models/House.js";
+import Registration from "../models/Registration.js";
+import Certificate from "../models/Certificate.js";
+import User from "../models/User.js";
+import { adminOnly, protect } from "../middleware/auth.js";
+import { uploadCertificates, uploadMedia } from "../middleware/upload.js";
+import { normalizeName } from "../utils/ticket.js";
+import { publicFileUrl } from "../utils/pdf.js";
+import { isCloudinaryReady, uploadBuffer } from "../utils/cloudinary.js";
+import { getServiceGates, serializeGates } from "../utils/serviceGates.js";
+
+const router = Router();
+router.use(protect, adminOnly);
+
+function crud(Model) {
+  const r = Router();
+  r.get("/", async (_req, res) => res.json(await Model.find().sort({ createdAt: -1 })));
+  r.post("/", async (req, res) => res.status(201).json(await Model.create(req.body)));
+  r.put("/:id", async (req, res) => {
+    const item = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!item) return res.status(404).json({ message: "Not found" });
+    res.json(item);
+  });
+  r.delete("/:id", async (req, res) => {
+    await Model.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  });
+  return r;
+}
+
+router.use("/events", crud(ArtsEvent));
+router.use("/workshops", crud(Workshop));
+router.use("/proshows", crud(Proshow));
+router.use("/ads", crud(Ad));
+router.use("/winners", crud(Winner));
+router.use("/preevents", crud(PreEvent));
+
+router.get("/service-gates", async (_req, res) => {
+  res.json(serializeGates(await getServiceGates()));
+});
+
+router.put("/service-gates", async (req, res) => {
+  const doc = await getServiceGates();
+  if (typeof req.body?.artsOpen === "boolean") doc.artsOpen = req.body.artsOpen;
+  if (typeof req.body?.workshopsOpen === "boolean") doc.workshopsOpen = req.body.workshopsOpen;
+  if (typeof req.body?.proshowsOpen === "boolean") doc.proshowsOpen = req.body.proshowsOpen;
+  await doc.save();
+  res.json(serializeGates(doc));
+});
+
+router.get("/points", async (_req, res) => {
+  const houses = await House.find().sort({ order: 1, name: 1 });
+  res.json(houses);
+});
+
+router.put("/points", async (req, res) => {
+  const rows = Array.isArray(req.body?.houses) ? req.body.houses : [];
+  const updated = [];
+  for (const row of rows) {
+    if (!row?._id) continue;
+    const points = Math.max(0, Number(row.points) || 0);
+    const house = await House.findByIdAndUpdate(row._id, { points }, { new: true });
+    if (house) updated.push(house);
+  }
+  res.json(updated.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)));
+});
+
+function registrationFilter(query) {
+  const filter = {};
+  if (query.scope === "paid") {
+    filter.itemType =
+      query.itemType && ["workshop", "proshow"].includes(query.itemType)
+        ? query.itemType
+        : { $in: ["workshop", "proshow"] };
+  } else if (query.scope === "arts") filter.itemType = "arts";
+  else if (query.itemType) filter.itemType = query.itemType;
+  if (query.itemId) filter.itemId = query.itemId;
+  if (query.department) {
+    filter.$or = [{ department: query.department }, { "members.department": query.department }];
+  }
+  return filter;
+}
+
+function registrationSort(query) {
+  if (query.sort === "event") return { itemTitle: 1, createdAt: -1 };
+  if (query.sort === "department") return { department: 1, itemTitle: 1, createdAt: -1 };
+  if (query.sort === "name") return { studentName: 1, createdAt: -1 };
+  return { createdAt: -1 };
+}
+
+function csvCell(value) {
+  const text = String(value ?? "").replace(/"/g, '""');
+  return `"${text}"`;
+}
+
+async function listRegistrations(query) {
+  const items = await Registration.find(registrationFilter(query))
+    .populate("user", "name email phone college studentClass houseName department")
+    .sort(registrationSort(query));
+  const missing = items.filter((r) => r.itemType === "arts" && !r.participationType);
+  const events = missing.length
+    ? await ArtsEvent.find({ _id: { $in: missing.map((r) => r.itemId) } }).select("participationType")
+    : [];
+  const kindById = Object.fromEntries(events.map((e) => [String(e._id), e.participationType]));
+  return items.map((r) => {
+    const row = r.toObject();
+    return {
+      ...row,
+      participationType: row.participationType || kindById[String(row.itemId)] || "individual",
+      studentName: row.studentName || row.user?.name || "",
+      studentClass: row.studentClass || row.user?.studentClass || "",
+      houseName: row.houseName || row.user?.houseName || "",
+      department: row.department || row.user?.department || "",
+      phone: row.phone || row.user?.phone || "",
+      email: row.email || row.user?.email || "",
+      ticketUrl: publicFileUrl(r.ticketPath),
+      invoiceUrl: publicFileUrl(r.invoicePath),
+    };
+  }).filter((row) => !query.participationType || row.participationType === query.participationType);
+}
+
+router.get("/stats", async (_req, res) => {
+  const [users, events, workshops, proshows, preevents, registrations, artsRegistrations, paidRegistrations, certificates] =
+    await Promise.all([
+      User.countDocuments({ role: "student" }),
+      ArtsEvent.countDocuments(),
+      Workshop.countDocuments(),
+      Proshow.countDocuments(),
+      PreEvent.countDocuments(),
+      Registration.countDocuments({ status: "confirmed" }),
+      Registration.countDocuments({ status: "confirmed", itemType: "arts" }),
+      Registration.countDocuments({ status: "confirmed", itemType: { $in: ["workshop", "proshow"] } }),
+      Certificate.countDocuments(),
+    ]);
+  res.json({
+    users,
+    events,
+    workshops,
+    proshows,
+    preevents,
+    registrations,
+    artsRegistrations,
+    paidRegistrations,
+    certificates,
+  });
+});
+
+router.get("/registrations", async (req, res) => {
+  res.json(await listRegistrations(req.query));
+});
+
+router.get("/registrations/export", async (req, res) => {
+  const items = await listRegistrations(req.query);
+  const arts = req.query.scope === "arts" || req.query.itemType === "arts";
+  const header = arts
+    ? "Kind,Event,Student / Leader,Class,House,Department,Phone,Email,Members,Ticket,Date"
+    : "Name,Email,Phone,College,Type,Title,Amount,Ticket,Status,Date";
+  const rows = items.map((r) =>
+    arts
+      ? [
+          r.participationType,
+          r.itemTitle,
+          r.studentName,
+          r.studentClass,
+          r.houseName,
+          r.department,
+          r.phone,
+          r.email,
+          (r.members || []).map((m) => `${m.name} (${m.studentClass}, ${m.department})`).join("; "),
+          r.ticketCode,
+          r.createdAt?.toISOString?.() || r.createdAt,
+        ]
+          .map(csvCell)
+          .join(",")
+      : [
+          r.user?.name || r.studentName,
+          r.user?.email || r.email,
+          r.user?.phone || r.phone,
+          r.user?.college,
+          r.itemType,
+          r.itemTitle,
+          r.amount,
+          r.ticketCode,
+          r.status,
+          r.createdAt?.toISOString?.() || r.createdAt,
+        ]
+          .map(csvCell)
+          .join(",")
+  );
+  const filename = arts ? "pragati-event-registrations.csv" : "pragati-paid-registrations.csv";
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+  res.send([header, ...rows].join("\n"));
+});
+
+router.post("/media", uploadMedia.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    if (!isCloudinaryReady()) {
+      return res.status(503).json({
+        message: "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to backend/.env",
+      });
+    }
+    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname);
+    res.json({ url: uploaded.secure_url, publicId: uploaded.public_id });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Image upload failed" });
+  }
+});
+
+router.get("/certificates", async (_req, res) => {
+  const items = await Certificate.find().populate("user", "name email").sort({ createdAt: -1 });
+  res.json(items.map((c) => ({ ...c.toObject(), downloadUrl: publicFileUrl(c.storedPath) })));
+});
+
+router.post("/certificates", uploadCertificates.array("files", 40), async (req, res) => {
+  try {
+    if (!req.files?.length) return res.status(400).json({ message: "Upload one or more PDF files" });
+
+    const users = await User.find({ role: "student" }).select("name email");
+    const created = [];
+
+    for (const file of req.files) {
+      const studentName = path.parse(file.originalname).name.replace(/[_-]+/g, " ").trim();
+      const match = users.find((u) => normalizeName(u.name) === normalizeName(studentName));
+      const cert = await Certificate.create({
+        originalName: file.originalname,
+        storedPath: file.path,
+        studentName,
+        user: match?._id,
+        matched: Boolean(match),
+      });
+      created.push(cert);
+    }
+
+    res.status(201).json({
+      message: `${created.length} certificate(s) uploaded`,
+      matched: created.filter((c) => c.matched).length,
+      unmatched: created.filter((c) => !c.matched).length,
+      items: created,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.put("/certificates/:id/match", async (req, res) => {
+  const { userId, studentName } = req.body;
+  const cert = await Certificate.findById(req.params.id);
+  if (!cert) return res.status(404).json({ message: "Certificate not found" });
+  if (userId) {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    cert.user = user._id;
+    cert.studentName = user.name;
+    cert.matched = true;
+  } else if (studentName) {
+    cert.studentName = studentName;
+    const user = await User.findOne({ name: new RegExp(`^${studentName}$`, "i") });
+    cert.user = user?._id;
+    cert.matched = Boolean(user);
+  }
+  await cert.save();
+  res.json(cert);
+});
+
+router.delete("/certificates/:id", async (req, res) => {
+  await Certificate.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+export default router;

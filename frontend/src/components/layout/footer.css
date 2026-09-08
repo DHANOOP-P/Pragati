@@ -1,0 +1,231 @@
+.site-foot {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 16rem;
+  padding: 2rem 1.25rem 1.35rem;
+  border-top: 1px solid rgba(215, 181, 109, 0.22);
+  background:
+    linear-gradient(90deg, rgba(196, 92, 45, 0.12), transparent 28%, transparent 72%, rgba(215, 181, 109, 0.08)),
+    #050308;
+}
+
+.site-foot-stamp {
+  pointer-events: none;
+  position: absolute;
+  right: -4%;
+  bottom: -38%;
+  z-index: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 18vw, 9rem);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.2px rgba(243, 236, 224, 0.08);
+  transform: rotate(-18deg);
+}
+
+.site-foot-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 1440px;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.site-foot-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.75rem;
+}
+
+.site-foot-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-foot-logo {
+  height: 2.15rem;
+  width: auto;
+}
+
+.site-foot-brand span {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-foot-brand b {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  line-height: 1;
+}
+
+.site-foot-brand i {
+  margin-top: 0.18rem;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #d7b56d;
+}
+
+.site-foot-nav {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.site-foot-nav a {
+  border: 1px solid rgba(243, 236, 224, 0.12);
+  border-radius: 999px;
+  padding: 0.38rem 0.78rem;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(243, 236, 224, 0.72);
+  transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.site-foot-nav a:hover {
+  color: #d7b56d;
+  border-color: rgba(215, 181, 109, 0.55);
+  background: rgba(215, 181, 109, 0.08);
+}
+
+.site-foot-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.site-foot-contact a:first-child {
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  font-style: italic;
+  color: #f3ece0;
+}
+
+.site-foot-contact a:last-child {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #d7b56d;
+}
+
+.site-foot-contact a:hover {
+  color: #d7b56d;
+}
+
+.site-foot-base {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.35rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(243, 236, 224, 0.1);
+}
+
+.site-foot-base > span {
+  flex: 0 0 auto;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9a9084;
+}
+
+.site-foot-houses {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.site-foot-houses p {
+  display: flex;
+  width: max-content;
+  gap: 1.2rem;
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(243, 236, 224, 0.34);
+  white-space: nowrap;
+  animation: site-foot-houses 26s linear infinite;
+}
+
+.site-foot-houses span::after {
+  content: "·";
+  margin-left: 1.2rem;
+  color: #c45c2d;
+}
+
+@keyframes site-foot-houses {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (min-width: 900px) {
+  .site-foot {
+    min-height: 18.5rem;
+    padding: 2.4rem 2.5rem 1.5rem;
+  }
+
+  .site-foot-logo {
+    height: 2.4rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .site-foot {
+    min-height: 18rem;
+  }
+
+  .site-foot-main {
+    align-items: flex-start;
+  }
+
+  .site-foot-nav {
+    justify-content: flex-start;
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .site-foot-contact {
+    margin-left: auto;
+    align-items: flex-end;
+  }
+
+  .site-foot-base {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-foot-houses p {
+    animation: none;
+  }
+}

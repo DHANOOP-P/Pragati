@@ -1,0 +1,10 @@
+.admin-date-input {
+  color-scheme: dark;
+  min-height: 2.6rem;
+}
+
+.admin-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.85;
+  filter: invert(1);
+}
