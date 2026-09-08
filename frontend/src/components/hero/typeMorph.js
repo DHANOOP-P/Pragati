@@ -70,11 +70,48 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
   }
   const { data, width, height } = c.getImageData(0, 0, off.width, off.height);
   const pts = [];
+  let minX = Infinity;
+  let maxX = -Infinity;
   for (let y = 0; y < height; y += gap) {
     for (let x = 0; x < width; x += gap) {
-      if (data[(y * width + x) * 4 + 3] > 132) pts.push({ x: x / dpr, y: y / dpr });
+      if (data[(y * width + x) * 4 + 3] > 132) {
+        const px = x / dpr;
+        pts.push({ x: px, y: y / dpr });
+        if (px < minX) minX = px;
+        if (px > maxX) maxX = px;
+      }
     }
   }
+  // #region agent log
+  if (align === "center") {
+    const metrics = c.measureText(text);
+    fetch("http://127.0.0.1:7884/ingest/4b5f1749-191d-4b7d-83f1-1444aa54ee80", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "cede7e" },
+      body: JSON.stringify({
+        sessionId: "cede7e",
+        runId: "pre-fix",
+        hypothesisId: "A",
+        location: "typeMorph.js:makeGlyph",
+        message: "glyph metrics",
+        data: {
+          text,
+          cssW: Math.round(cssW),
+          drawX: Math.round(drawX),
+          mid: Math.round(cssW / 2),
+          shift: Math.round(drawX - cssW / 2),
+          left: Math.round(metrics.actualBoundingBoxLeft || 0),
+          right: Math.round(metrics.actualBoundingBoxRight || 0),
+          inkMin: Number.isFinite(minX) ? Math.round(minX) : null,
+          inkMax: Number.isFinite(maxX) ? Math.round(maxX) : null,
+          inkCenter: Number.isFinite(minX) ? Math.round((minX + maxX) / 2) : null,
+          inkOff: Number.isFinite(minX) ? Math.round((minX + maxX) / 2 - cssW / 2) : null,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  }
+  // #endregion
   return { canvas: off, pts, cssW, cssH, font: drawFont, drawX };
 };
 
@@ -129,6 +166,29 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
 
   const wordOrigin = wordEl.getBoundingClientRect();
   const yearOrigin = yearEl.getBoundingClientRect();
+  // #region agent log
+  fetch("http://127.0.0.1:7884/ingest/4b5f1749-191d-4b7d-83f1-1444aa54ee80", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "cede7e" },
+    body: JSON.stringify({
+      sessionId: "cede7e",
+      runId: "pre-fix",
+      hypothesisId: "C",
+      location: "typeMorph.js:createTypeMorph",
+      message: "word box vs viewport",
+      data: {
+        sw,
+        wordLeft: Math.round(wordOrigin.left),
+        wordW: Math.round(wordOrigin.width),
+        wordMid: Math.round((wordOrigin.left + wordOrigin.right) / 2),
+        viewMid: Math.round(sw / 2),
+        boxOff: Math.round((wordOrigin.left + wordOrigin.right) / 2 - sw / 2),
+        mobile,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
   const place = (origin, pts) => pts.map((p) => ({ x: p.x + origin.left, y: p.y + origin.top }));
 
   const gap = mobile ? 3 : 2;
