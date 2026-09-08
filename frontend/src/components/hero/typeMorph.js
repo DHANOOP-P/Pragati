@@ -61,9 +61,7 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
     }
     drawFont = font.replace(/(\d+(?:\.\d+)?)px/, `${fontSize}px`);
     c.font = drawFont;
-    const left = metrics.actualBoundingBoxLeft ?? metrics.width / 2;
-    const right = metrics.actualBoundingBoxRight ?? metrics.width / 2;
-    drawX = cssW / 2 + (left - right) / 2;
+    drawX = cssW / 2;
     c.fillText(text, drawX, cssH / 2);
   } else {
     c.fillText(text, drawX, cssH / 2);
@@ -82,36 +80,13 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
       }
     }
   }
-  // #region agent log
-  if (align === "center") {
-    const metrics = c.measureText(text);
-    fetch("http://127.0.0.1:7884/ingest/4b5f1749-191d-4b7d-83f1-1444aa54ee80", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "cede7e" },
-      body: JSON.stringify({
-        sessionId: "cede7e",
-        runId: "pre-fix",
-        hypothesisId: "A",
-        location: "typeMorph.js:makeGlyph",
-        message: "glyph metrics",
-        data: {
-          text,
-          cssW: Math.round(cssW),
-          drawX: Math.round(drawX),
-          mid: Math.round(cssW / 2),
-          shift: Math.round(drawX - cssW / 2),
-          left: Math.round(metrics.actualBoundingBoxLeft || 0),
-          right: Math.round(metrics.actualBoundingBoxRight || 0),
-          inkMin: Number.isFinite(minX) ? Math.round(minX) : null,
-          inkMax: Number.isFinite(maxX) ? Math.round(maxX) : null,
-          inkCenter: Number.isFinite(minX) ? Math.round((minX + maxX) / 2) : null,
-          inkOff: Number.isFinite(minX) ? Math.round((minX + maxX) / 2 - cssW / 2) : null,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
+  if (align === "center" && Number.isFinite(minX) && maxX > minX) {
+    const dx = cssW / 2 - (minX + maxX) / 2;
+    if (Math.abs(dx) > 0.5) {
+      drawX += dx;
+      for (let i = 0; i < pts.length; i += 1) pts[i].x += dx;
+    }
   }
-  // #endregion
   return { canvas: off, pts, cssW, cssH, font: drawFont, drawX };
 };
 
@@ -146,6 +121,7 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
   const cssW = rootEl.clientWidth;
   const cssH = rootEl.clientHeight;
   if (!cssW || !cssH || !wordEl || !yearEl) return { draw: () => {}, destroy: () => {} };
+  if (wordEl.clientWidth < 80) return { draw: () => {}, destroy: () => {} };
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const sw = document.documentElement.clientWidth || window.innerWidth;
@@ -166,30 +142,11 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
 
   const wordOrigin = wordEl.getBoundingClientRect();
   const yearOrigin = yearEl.getBoundingClientRect();
-  // #region agent log
-  fetch("http://127.0.0.1:7884/ingest/4b5f1749-191d-4b7d-83f1-1444aa54ee80", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "cede7e" },
-    body: JSON.stringify({
-      sessionId: "cede7e",
-      runId: "pre-fix",
-      hypothesisId: "C",
-      location: "typeMorph.js:createTypeMorph",
-      message: "word box vs viewport",
-      data: {
-        sw,
-        wordLeft: Math.round(wordOrigin.left),
-        wordW: Math.round(wordOrigin.width),
-        wordMid: Math.round((wordOrigin.left + wordOrigin.right) / 2),
-        viewMid: Math.round(sw / 2),
-        boxOff: Math.round((wordOrigin.left + wordOrigin.right) / 2 - sw / 2),
-        mobile,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-  const place = (origin, pts) => pts.map((p) => ({ x: p.x + origin.left, y: p.y + origin.top }));
+  const viewMid = sw / 2;
+  const wordMid = (wordOrigin.left + wordOrigin.right) / 2;
+  const screenNudge = viewMid - wordMid;
+  const place = (origin, pts, extra = 0) =>
+    pts.map((p) => ({ x: p.x + origin.left + screenNudge + extra, y: p.y + origin.top }));
 
   const gap = mobile ? 3 : 2;
   const wordCap = mobile ? 900 : 2000;
@@ -210,7 +167,8 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
   const yrGlyph = makeGlyph(YEAR, yrFont, yrSpace, yearEl.clientWidth, yearEl.clientHeight, dpr, gap);
 
   const en = place(wordOrigin, takeEven(enGlyph.pts, wordCap));
-  const ml = place(wordOrigin, takeEven(mlGlyph.pts, wordCap));
+  const mlShift = mobile ? -Math.min(16, wordEl.clientWidth * 0.05) : 0;
+  const ml = place(wordOrigin, takeEven(mlGlyph.pts, wordCap), mlShift);
   const yr = place(yearOrigin, takeEven(yrGlyph.pts, yearCap));
 
   const wordCount = Math.min(en.length, ml.length);
@@ -450,7 +408,7 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
     };
   };
 
-  const drawSolid = (text, glyph, spacing, origin, alpha) => {
+  const drawSolid = (text, glyph, spacing, origin, alpha, extra = 0) => {
     if (alpha <= 0.01) return;
     ctx.save();
     ctx.globalAlpha = alpha;
@@ -461,7 +419,7 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
     if ("letterSpacing" in ctx && spacing && spacing !== "0px") ctx.letterSpacing = spacing;
     ctx.shadowColor = "rgba(5, 3, 8, 0.5)";
     ctx.shadowBlur = 16;
-    ctx.fillText(text, origin.left + glyph.drawX, origin.top + glyph.cssH / 2);
+    ctx.fillText(text, origin.left + glyph.drawX + screenNudge + extra, origin.top + glyph.cssH / 2);
     ctx.restore();
   };
 
@@ -517,7 +475,7 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
 
     ctx.globalCompositeOperation = "source-over";
     drawSolid(EN, enGlyph, enSpace, wordOrigin, solid.en);
-    drawSolid(ML, mlGlyph, mlSpace, wordOrigin, solid.ml);
+    drawSolid(ML, mlGlyph, mlSpace, wordOrigin, solid.ml, mlShift);
     drawSolid(YEAR, yrGlyph, yrSpace, yearOrigin, solid.year);
 
     ctx.globalCompositeOperation = lastT > 0.7 && formAmt < 0.28 ? "lighter" : "source-over";

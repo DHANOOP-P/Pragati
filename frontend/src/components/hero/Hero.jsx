@@ -101,9 +101,16 @@ const Hero = () => {
       const year = q(".hero-year");
       const type = typeRef.current;
       if (!word || !year || !type) return;
-      typeMorph.destroy?.();
-      typeMorph = createTypeMorph(rootEl, type, word, year, mobile);
-      typeMorph.draw(morphT);
+      const run = (tries = 0) => {
+        if (word.clientWidth < 80 && tries < 12) {
+          requestAnimationFrame(() => run(tries + 1));
+          return;
+        }
+        typeMorph.destroy?.();
+        typeMorph = createTypeMorph(rootEl, type, word, year, mobile);
+        typeMorph.draw(morphT);
+      };
+      requestAnimationFrame(() => run(0));
     };
 
     const applyMorph = (t) => {

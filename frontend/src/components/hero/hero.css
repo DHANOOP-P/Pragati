@@ -286,14 +286,16 @@
 
 @media (max-width: 768px) {
   .hero-copy {
-    padding: 0 0.85rem;
+    padding: 0 0.5rem;
   }
 
   .hero-billboard {
-    width: min(96vw, 100%);
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero-word {
+    width: 100%;
     height: 1.35em;
     font-size: clamp(2.05rem, 11vw, 3.2rem);
     line-height: 1.35;
@@ -301,14 +303,19 @@
   }
 
   .hero-lang-ml {
-    font-size: min(1.12em, 17vw);
-    transform: none;
+    font-size: min(1.12em, 16vw);
     left: 0;
     right: 0;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    transform: translateX(-4%);
   }
 
   .hero-year {
     font-size: clamp(1.7rem, 9vw, 2.8rem);
+    width: 100%;
+    text-align: center;
   }
 }
 
