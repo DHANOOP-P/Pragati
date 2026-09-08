@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useRef } from "react";
+import { mediaUrl } from "../../utils/media";
 
 const PosterCard = ({ item, to, index, kicker, price, framed = false }) => {
   const ref = useRef(null);
@@ -35,7 +36,7 @@ const PosterCard = ({ item, to, index, kicker, price, framed = false }) => {
         style={framed ? undefined : { transformStyle: "preserve-3d" }}
       >
         <img
-          src={item.image}
+          src={mediaUrl(item.image, 1400)}
           alt={item.title}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"

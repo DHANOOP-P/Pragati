@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../../api/client";
 import AdminDateField, { toLocalDateTime } from "./AdminDateField";
+import { mediaUrl } from "../../utils/media";
 import "./adminForm.css";
 
 const AdminCrud = ({ title, endpoint, fields, defaults }) => {
   const [items, setItems] = useState([]);
+  const [library, setLibrary] = useState([]);
   const [form, setForm] = useState(defaults);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
@@ -14,6 +16,10 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
 
   useEffect(() => {
     load();
+    api
+      .get("/admin/media")
+      .then((res) => setLibrary(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setLibrary([]));
   }, [endpoint]);
 
   const onChange = (e) => {
@@ -30,6 +36,7 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
       body.append("file", file);
       const { data } = await api.post("/admin/media", body);
       setForm((f) => ({ ...f, [name]: data.url }));
+      if (data.url) setLibrary((cur) => [{ url: data.url, publicId: data.publicId || "" }, ...cur.filter((item) => item.url !== data.url)]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -98,7 +105,21 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
                 />
                 {uploading === f.name && <span className="mt-2 block text-gold">Uploading…</span>}
                 {form[f.name] && (
-                  <img src={form[f.name]} alt="" className="mt-3 h-28 w-full object-cover" />
+                  <img src={mediaUrl(form[f.name], 480)} alt="" className="mt-3 h-28 w-full object-cover" />
+                )}
+                {library.length > 0 && (
+                  <span className="mt-3 flex flex-wrap gap-2">
+                    {library.slice(0, 12).map((shot) => (
+                      <button
+                        key={shot.publicId || shot.url}
+                        type="button"
+                        onClick={() => setForm((cur) => ({ ...cur, [f.name]: shot.url }))}
+                        className={`h-12 w-12 overflow-hidden border ${form[f.name] === shot.url ? "border-gold" : "border-paper/20"}`}
+                      >
+                        <img src={mediaUrl(shot.url, 96)} alt="" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </span>
                 )}
               </span>
             ) : (
@@ -124,7 +145,7 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
           <div key={item._id} className="flex flex-wrap items-center justify-between gap-3 border border-paper/10 px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               {imageSrc(item) ? (
-                <img src={imageSrc(item)} alt="" className="h-12 w-12 shrink-0 object-cover" />
+                <img src={mediaUrl(imageSrc(item), 96)} alt="" className="h-12 w-12 shrink-0 object-cover" />
               ) : null}
               <p className="truncate">{item.title || item.studentName || item.eventTitle}</p>
             </div>

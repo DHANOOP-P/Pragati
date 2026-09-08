@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import api from "../../api/client";
 import ErrorState from "../ui/ErrorState";
+import { mediaUrl } from "../../utils/media";
 import "./eventRiver.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -206,7 +207,7 @@ const EventRiver = ({
                     data-cursor="ENTER"
                     className="event-river-shell"
                   >
-                    {item.image ? <img src={item.image} alt="" loading="lazy" /> : null}
+                    {item.image ? <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" /> : null}
                     <div className="event-river-copy">
                       {/* <p className="text-[11px] uppercase tracking-[0.32em] text-ember">
                         {String(i + 1).padStart(2, "0")} ·{" "}

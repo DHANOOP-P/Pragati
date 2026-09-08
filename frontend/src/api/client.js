@@ -6,6 +6,10 @@ const api = axios.create({ baseURL: apiBaseUrl() });
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("pragati_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (typeof config.headers.delete === "function") config.headers.delete("Content-Type");
+    else delete config.headers["Content-Type"];
+  }
   return config;
 });
 

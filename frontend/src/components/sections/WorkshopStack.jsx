@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import api from "../../api/client";
+import { mediaUrl } from "../../utils/media";
 import "./workshopStack.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -137,7 +138,7 @@ const WorkshopStack = ({ asPage = false }) => {
                   className="workshop-pop-card"
                 >
                   <div className="workshop-pop-media">
-                    <img src={item.image} alt="" loading="lazy" />
+                    <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" />
                   </div>
                   <div className="workshop-pop-copy">
                     <p className="text-[11px] uppercase tracking-[0.32em] text-ember">

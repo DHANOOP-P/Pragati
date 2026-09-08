@@ -206,14 +206,20 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  text-align: center;
   white-space: nowrap;
 }
 
 .hero-lang-ml {
   font-family: var(--font-malayalam);
-  font-size: 1.62em;
+  font-size: 1.42em;
   font-weight: 800;
   letter-spacing: 0;
+  line-height: 1;
+  direction: ltr;
+  unicode-bidi: isolate;
   opacity: 0;
 }
 
@@ -288,14 +294,17 @@
   }
 
   .hero-word {
-    height: 1.55em;
-    font-size: clamp(2.5rem, 12.5vw, 4rem);
-    line-height: 1.55;
+    height: 1.35em;
+    font-size: clamp(2.05rem, 11vw, 3.2rem);
+    line-height: 1.35;
     letter-spacing: -0.02em;
   }
 
   .hero-lang-ml {
-    font-size: 1.85em;
+    font-size: min(1.12em, 17vw);
+    transform: none;
+    left: 0;
+    right: 0;
   }
 
   .hero-year {

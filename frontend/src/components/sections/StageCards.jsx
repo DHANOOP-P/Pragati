@@ -4,6 +4,7 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { mediaUrl } from "../../utils/media";
 import "./stageCards.css";
 
 const ONSTAGE = new Set(["dance", "music", "theatre", "stage"]);
@@ -160,7 +161,7 @@ const StageCards = ({ events = [] }) => {
                   <span className={`stage-card-bob ${settled && !reduce ? "is-live" : ""}`}>
                     <Link to={card.to} data-cursor="ENTER" className="stage-card-link">
                       <span className="stage-card-tilt">
-                        <img src={card.image} alt="" loading="lazy" className="stage-card-img" />
+                        <img src={mediaUrl(card.image, 900)} alt="" loading="lazy" className="stage-card-img" />
                         <span className="stage-card-frame" aria-hidden />
                         <Arrow />
                         <div className="stage-card-plate">

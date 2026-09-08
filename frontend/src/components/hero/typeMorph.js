@@ -31,11 +31,52 @@ const makeGlyph = (text, font, letterSpacing, cssW, cssH, dpr, gap, align = "cen
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.clearRect(0, 0, cssW, cssH);
   c.fillStyle = PAPER;
-  c.font = font;
+  let drawFont = font;
+  let drawX = align === "left" ? 0 : cssW / 2;
+  const sizeMatch = font.match(/(\d+(?:\.\d+)?)px/);
+  let fontSize = sizeMatch ? parseFloat(sizeMatch[1]) : 16;
+  c.font = drawFont;
   c.textAlign = align;
   c.textBaseline = "middle";
-  if ("letterSpacing" in c) c.letterSpacing = letterSpacing;
-  c.fillText(text, align === "left" ? 0 : cssW / 2, cssH / 2);
+  if ("letterSpacing" in c && letterSpacing && letterSpacing !== "0px") {
+    c.letterSpacing = letterSpacing;
+  }
+  if (align === "center") {
+    const fit = (size) => {
+      const next = font.replace(/(\d+(?:\.\d+)?)px/, `${size}px`);
+      c.font = next;
+      return c.measureText(text);
+    };
+    let metrics = fit(fontSize);
+    const advance = metrics.width || 1;
+    if (advance > cssW * 0.92) {
+      fontSize *= (cssW * 0.92) / advance;
+      metrics = fit(fontSize);
+    }
+    const inkH =
+      (metrics.actualBoundingBoxAscent || fontSize * 0.8) + (metrics.actualBoundingBoxDescent || fontSize * 0.25);
+    if (inkH > cssH * 0.9) {
+      fontSize *= (cssH * 0.9) / inkH;
+      metrics = fit(fontSize);
+    }
+    drawFont = font.replace(/(\d+(?:\.\d+)?)px/, `${fontSize}px`);
+    c.font = drawFont;
+    const left = metrics.actualBoundingBoxLeft ?? metrics.width / 2;
+    const right = metrics.actualBoundingBoxRight ?? metrics.width / 2;
+    drawX = cssW / 2 + (left - right) / 2;
+    c.fillText(text, drawX, cssH / 2);
+  } else {
+    c.fillText(text, drawX, cssH / 2);
+  }
+  const { data, width, height } = c.getImageData(0, 0, off.width, off.height);
+  const pts = [];
+  for (let y = 0; y < height; y += gap) {
+    for (let x = 0; x < width; x += gap) {
+      if (data[(y * width + x) * 4 + 3] > 132) pts.push({ x: x / dpr, y: y / dpr });
+    }
+  }
+  return { canvas: off, pts, cssW, cssH, font: drawFont, drawX };
+};
   const { data, width, height } = c.getImageData(0, 0, off.width, off.height);
   const pts = [];
   for (let y = 0; y < height; y += gap) {
@@ -358,18 +399,18 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
     };
   };
 
-  const drawSolid = (text, font, spacing, origin, boxW, boxH, alpha) => {
+  const drawSolid = (text, glyph, spacing, origin, alpha) => {
     if (alpha <= 0.01) return;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = PAPER;
-    ctx.font = font;
+    ctx.font = glyph.font;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    if ("letterSpacing" in ctx) ctx.letterSpacing = spacing;
+    if ("letterSpacing" in ctx && spacing && spacing !== "0px") ctx.letterSpacing = spacing;
     ctx.shadowColor = "rgba(5, 3, 8, 0.5)";
     ctx.shadowBlur = 16;
-    ctx.fillText(text, origin.left + boxW / 2, origin.top + boxH / 2);
+    ctx.fillText(text, origin.left + glyph.drawX, origin.top + glyph.cssH / 2);
     ctx.restore();
   };
 
@@ -424,9 +465,9 @@ export const createTypeMorph = (rootEl, canvas, wordEl, yearEl, mobile) => {
     const solid = solids(lastT);
 
     ctx.globalCompositeOperation = "source-over";
-    drawSolid(EN, enFont, enSpace, wordOrigin, enGlyph.cssW, enGlyph.cssH, solid.en);
-    drawSolid(ML, mlFont, mlSpace, wordOrigin, mlGlyph.cssW, mlGlyph.cssH, solid.ml);
-    drawSolid(YEAR, yrFont, yrSpace, yearOrigin, yrGlyph.cssW, yrGlyph.cssH, solid.year);
+    drawSolid(EN, enGlyph, enSpace, wordOrigin, solid.en);
+    drawSolid(ML, mlGlyph, mlSpace, wordOrigin, solid.ml);
+    drawSolid(YEAR, yrGlyph, yrSpace, yearOrigin, solid.year);
 
     ctx.globalCompositeOperation = lastT > 0.7 && formAmt < 0.28 ? "lighter" : "source-over";
     for (let i = 0; i < particles.length; i += 1) {

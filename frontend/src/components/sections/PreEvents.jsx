@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import api from "../../api/client";
+import { mediaUrl } from "../../utils/media";
 import "./preEvents.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -152,7 +153,7 @@ const PreEvents = ({ asPage = false, items: given }) => {
               {items.map((item, i) => (
                 <article key={item._id || item.title} className="pre-event-card">
                   <div className="pre-event-shell">
-                    {item.image ? <img src={item.image} alt="" loading="lazy" /> : null}
+                    {item.image ? <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" /> : null}
                     <div className="pre-event-copy">
                       <p className="text-[11px] uppercase tracking-[0.32em] text-ember">
                         {String(i + 1).padStart(2, "0")} · {item.category || "Campus"}

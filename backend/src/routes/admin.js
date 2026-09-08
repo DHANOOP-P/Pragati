@@ -11,10 +11,10 @@ import Registration from "../models/Registration.js";
 import Certificate from "../models/Certificate.js";
 import User from "../models/User.js";
 import { adminOnly, protect } from "../middleware/auth.js";
-import { uploadCertificates, uploadMedia } from "../middleware/upload.js";
+import { uploadCertificates, uploadMedia, saveLocalImage, listLocalImages } from "../middleware/upload.js";
 import { normalizeName } from "../utils/ticket.js";
 import { publicFileUrl } from "../utils/pdf.js";
-import { isCloudinaryReady, uploadBuffer } from "../utils/cloudinary.js";
+import { isCloudinaryReady, uploadBuffer, listImages } from "../utils/cloudinary.js";
 import { getServiceGates, serializeGates } from "../utils/serviceGates.js";
 
 const router = Router();
@@ -201,16 +201,31 @@ router.get("/registrations/export", async (req, res) => {
   res.send([header, ...rows].join("\n"));
 });
 
+router.get("/media", async (req, res) => {
+  try {
+    if (isCloudinaryReady()) {
+      const items = await listImages({ folder: req.query.folder || "pragati" });
+      return res.json(items);
+    }
+    res.json(listLocalImages());
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Could not list images" });
+  }
+});
+
 router.post("/media", uploadMedia.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    if (!isCloudinaryReady()) {
-      return res.status(503).json({
-        message: "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to backend/.env",
+    if (isCloudinaryReady()) {
+      const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.query.folder || "pragati");
+      return res.json({
+        url: uploaded.secure_url,
+        publicId: uploaded.public_id,
+        source: "cloudinary",
       });
     }
-    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname);
-    res.json({ url: uploaded.secure_url, publicId: uploaded.public_id });
+    const local = saveLocalImage(req.file.buffer, req.file.originalname);
+    res.json({ ...local, source: "local" });
   } catch (err) {
     res.status(500).json({ message: err.message || "Image upload failed" });
   }

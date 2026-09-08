@@ -45,4 +45,29 @@ export const uploadMedia = multer({
   limits: { fileSize: 12 * 1024 * 1024 },
 });
 
+export function saveLocalImage(buffer, originalname = "image.jpg") {
+  const dir = path.join(uploadRoot, "media");
+  ensureDir(dir);
+  const safe = String(originalname).replace(/[^\w.\- ()]/g, "_") || "image.jpg";
+  const name = `${Date.now()}-${safe}`;
+  fs.writeFileSync(path.join(dir, name), buffer);
+  return { url: `/uploads/media/${name}`, publicId: "" };
+}
+
+export function listLocalImages() {
+  const dir = path.join(uploadRoot, "media");
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((name) => /\.(jpe?g|png|webp|gif|avif)$/i.test(name))
+    .sort()
+    .reverse()
+    .slice(0, 80)
+    .map((name) => ({
+      url: `/uploads/media/${name}`,
+      publicId: "",
+      createdAt: fs.statSync(path.join(dir, name)).mtime.toISOString(),
+    }));
+}
+
 export const uploadRootPath = uploadRoot;

@@ -4,6 +4,7 @@ import api from "../api/client";
 import PosterCard from "../components/events/PosterCard";
 import ErrorState from "../components/ui/ErrorState";
 import { isOnstageEvent } from "../components/sections/StageCards";
+import { mediaUrl } from "../utils/media";
 
 const Catalog = ({ endpoint, title, kicker, pathBase, badge, adPlacement, priceKey, framed }) => {
   const [items, setItems] = useState([]);
@@ -52,7 +53,7 @@ const Catalog = ({ endpoint, title, kicker, pathBase, badge, adPlacement, priceK
       <h1 className="mt-3 font-display text-6xl md:text-8xl">{heading}</h1>
       {ads[0] && (
         <Link to={ads[0].link || pathBase} className="mt-10 block overflow-hidden" data-cursor="VIEW">
-          <img src={ads[0].media} alt={ads[0].title} className="h-56 w-full object-cover md:h-72" />
+          <img src={mediaUrl(ads[0].media, 1400)} alt={ads[0].title} className="h-56 w-full object-cover md:h-72" />
           <p className="mt-3 text-gold">{ads[0].title}</p>
         </Link>
       )}

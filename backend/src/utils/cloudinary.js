@@ -22,15 +22,24 @@ export function initCloudinary() {
   return cloudinary;
 }
 
-export function uploadBuffer(buffer, filename = "image") {
+function folderName(folder = "pragati") {
+  const cleaned = String(folder || "pragati")
+    .replace(/[^a-zA-Z0-9/_-]/g, "")
+    .replace(/^\/+|\/+$/g, "");
+  if (!cleaned || cleaned === "pragati") return "pragati";
+  return cleaned.startsWith("pragati/") ? cleaned : `pragati/${cleaned}`;
+}
+
+export function uploadBuffer(buffer, filename = "image", folder = "pragati") {
   const api = initCloudinary();
   return new Promise((resolve, reject) => {
     const stream = api.uploader.upload_stream(
       {
-        folder: "pragati",
+        folder: folderName(folder),
         resource_type: "image",
         use_filename: true,
         unique_filename: true,
+        overwrite: false,
         filename_override: filename.replace(/\.[^.]+$/, ""),
       },
       (err, result) => {
@@ -40,4 +49,22 @@ export function uploadBuffer(buffer, filename = "image") {
     );
     stream.end(buffer);
   });
+}
+
+export async function listImages({ folder = "pragati", max = 80 } = {}) {
+  const api = initCloudinary();
+  const result = await api.api.resources({
+    type: "upload",
+    prefix: `${folderName(folder)}/`,
+    max_results: Math.min(100, Number(max) || 80),
+    resource_type: "image",
+  });
+  return (result.resources || []).map((item) => ({
+    url: item.secure_url,
+    publicId: item.public_id,
+    width: item.width,
+    height: item.height,
+    format: item.format,
+    createdAt: item.created_at,
+  }));
 }

@@ -4,6 +4,7 @@ import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { startPaidCheckout } from "../utils/checkout";
 import { downloadAuth } from "../utils/download";
+import { mediaUrl } from "../utils/media";
 import { isCollegeEmail } from "../utils/collegeEmail";
 import { isServiceOpen } from "../utils/serviceGates";
 import ErrorState from "../components/ui/ErrorState";
@@ -149,7 +150,7 @@ const ItemDetail = ({ type }) => {
         {type !== "arts" && item.image ? (
           <div className="flex w-full justify-center">
             <img
-              src={item.image}
+              src={mediaUrl(item.image, 900)}
               alt={item.title}
               className="h-auto w-full max-w-[22rem] object-contain object-center sm:max-w-md md:max-w-lg"
             />
