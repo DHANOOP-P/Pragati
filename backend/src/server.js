@@ -16,7 +16,29 @@ import adminRoutes from "./routes/admin.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  const extra = String(process.env.CLIENT_URL || "")
+    .split(",")
+    .map((s) => s.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  if (origin === "http://localhost:5173" || extra.includes(origin)) return true;
+  try {
+    const { protocol, hostname } = new URL(origin);
+    return protocol === "https:" && hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      callback(null, isAllowedOrigin(origin));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "8mb" }));
 app.use("/uploads", express.static(uploadRootPath));
 

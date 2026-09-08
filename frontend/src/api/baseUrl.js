@@ -1,8 +1,10 @@
-/** Production: VITE_API_URL=https://your-app.fly.dev/api */
+/** Production: VITE_API_URL=https://your-api.onrender.com/api */
 export function apiBaseUrl() {
   const raw = import.meta.env.VITE_API_URL;
   if (!raw) return "/api";
-  return String(raw).replace(/\/+$/, "");
+  let base = String(raw).replace(/\/+$/, "");
+  if (!base.endsWith("/api")) base = `${base}/api`;
+  return base;
 }
 
 /** Resolve `/api/foo` (or a relative `/foo`) to an absolute or proxied URL. */
