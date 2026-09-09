@@ -31,7 +31,7 @@ const Layout = () => {
 
   return (
     <LayoutChromeProvider value={{ setHideFooter: setFooterHidden }}>
-    <div className="relative min-h-screen overflow-x-hidden bg-void text-paper">
+    <div className="relative min-h-screen bg-void text-paper">
       {!isAdmin && <Atmosphere />}
       <div className="grain" aria-hidden />
       <div className="vignette" aria-hidden />
@@ -44,7 +44,7 @@ const Layout = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28 }}
-          className="relative z-10 min-w-0 w-full"
+          className="relative z-10"
         >
           <Outlet />
         </motion.main>
