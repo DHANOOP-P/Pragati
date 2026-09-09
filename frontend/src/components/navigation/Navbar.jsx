@@ -4,9 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import BrandMark from "../ui/BrandMark";
 
-const CERTIFICATE_URL =
-  "https://drive.google.com/drive/folders/1XQ0h_IaAfKm5y29VNC6OoCeNnbEH_vgC?usp=sharing";
-
 const links = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
@@ -15,7 +12,7 @@ const links = [
   { to: "/workshops", label: "Workshops" },
   { to: "/proshows", label: "Proshow" },
   { to: "/winners", label: "Points" },
-  { href: CERTIFICATE_URL, label: "Certificate", external: true },
+  { to: "/certificates", label: "Certificate" },
 ];
 
 const Navbar = () => {
@@ -40,29 +37,17 @@ const Navbar = () => {
             </span>
           </Link>
           <nav className="hidden items-center gap-7 mix-blend-difference lg:flex">
-            {links.map((l) =>
-              l.external ? (
-                <a
-                  key={l.label}
-                  href={l.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[11px] uppercase tracking-[0.28em] text-paper/80"
-                >
-                  {l.label}
-                </a>
-              ) : (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  className={({ isActive }) =>
-                    `text-[11px] uppercase tracking-[0.28em] ${isActive ? "text-gold" : "text-paper/80"}`
-                  }
-                >
-                  {l.label}
-                </NavLink>
-              )
-            )}
+            {links.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) =>
+                  `text-[11px] uppercase tracking-[0.28em] ${isActive ? "text-gold" : "text-paper/80"}`
+                }
+              >
+                {l.label}
+              </NavLink>
+            ))}
             {user ? (
               <>
                 <Link to={user.role === "admin" ? "/admin" : "/dashboard"} className="text-[11px] uppercase tracking-[0.28em] text-gold">
@@ -96,31 +81,17 @@ const Navbar = () => {
             <button type="button" className="absolute right-6 top-6 text-[11px] uppercase tracking-[0.3em]" onClick={() => setOpen(false)}>
               Close
             </button>
-            {links.map((l, i) =>
-              l.external ? (
-                <a
-                  key={l.label}
-                  href={l.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setOpen(false)}
-                  className="font-display text-5xl leading-tight"
-                  style={{ transitionDelay: `${i * 40}ms` }}
-                >
-                  {l.label}
-                </a>
-              ) : (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setOpen(false)}
-                  className="font-display text-5xl leading-tight"
-                  style={{ transitionDelay: `${i * 40}ms` }}
-                >
-                  {l.label}
-                </NavLink>
-              )
-            )}
+            {links.map((l, i) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                onClick={() => setOpen(false)}
+                className="font-display text-5xl leading-tight"
+                style={{ transitionDelay: `${i * 40}ms` }}
+              >
+                {l.label}
+              </NavLink>
+            ))}
             {user ? (
               <>
                 <NavLink

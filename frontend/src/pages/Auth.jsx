@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import BrandMark from "../components/ui/BrandMark";
 
 const field = "mt-3 w-full border-b border-paper/20 bg-transparent py-3 outline-none focus:border-gold";
+
+const safeFrom = (value) => {
+  const path = String(value || "");
+  if (path.startsWith("/") && !path.startsWith("//")) return path;
+  return "/";
+};
 
 const Auth = () => {
   const [mode, setMode] = useState("login");
@@ -11,6 +17,7 @@ const Auth = () => {
   const [error, setError] = useState("");
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -20,7 +27,7 @@ const Auth = () => {
     try {
       if (mode === "login") await login({ email: form.email, password: form.password });
       else await signup(form);
-      navigate("/");
+      navigate(safeFrom(location.state?.from));
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -34,7 +41,7 @@ const Auth = () => {
         <p className="text-[11px] uppercase tracking-[0.4em] text-ember">Threshold</p>
         <h1 className="mt-2 font-display text-6xl">{mode === "login" ? "Return" : "Arrive"}</h1>
         <p className="mt-4 text-sm text-mute">
-          Arts and the point table need a college mail like name_21b410cs@gecwyd.ac.in. Workshops and proshows accept any account.
+          Arts, the point table, and certificates need a college mail like name_21b410cs@gecwyd.ac.in. Workshops and proshows accept any account.
         </p>
         {mode === "signup" && (
           <>

@@ -9,3 +9,7 @@ export function canSeePointTable(user) {
   if (user.role === "admin") return true;
   return isCollegeEmail(user.email);
 }
+
+export function canSeeCertificates(user) {
+  return canSeePointTable(user);
+}

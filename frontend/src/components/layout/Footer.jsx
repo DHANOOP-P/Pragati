@@ -2,9 +2,6 @@ import { Link } from "react-router-dom";
 import BrandMark from "../ui/BrandMark";
 import "./footer.css";
 
-const CERTIFICATE_URL =
-  "https://drive.google.com/drive/folders/1XQ0h_IaAfKm5y29VNC6OoCeNnbEH_vgC?usp=sharing";
-
 const links = [
   { to: "/about", label: "About" },
   { to: "/events", label: "Events" },
@@ -12,7 +9,7 @@ const links = [
   { to: "/workshops", label: "Workshops" },
   { to: "/proshows", label: "Proshow" },
   { to: "/winners", label: "Points" },
-  { href: CERTIFICATE_URL, label: "Certificate", external: true },
+  { to: "/certificates", label: "Certificate" },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -35,17 +32,11 @@ const Footer = () => (
         </Link>
 
         <nav className="site-foot-nav" aria-label="Footer">
-          {links.map((item) =>
-            item.external ? (
-              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer">
-                {item.label}
-              </a>
-            ) : (
-              <Link key={item.to} to={item.to}>
-                {item.label}
-              </Link>
-            )
-          )}
+          {links.map((item) => (
+            <Link key={item.to} to={item.to}>
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="site-foot-contact">

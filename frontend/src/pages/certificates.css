@@ -1,0 +1,67 @@
+.cert-page {
+  position: relative;
+  z-index: 20;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 7.5rem 1.5rem 6rem;
+}
+
+.cert-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #c45c2d;
+}
+
+.cert-page h1 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.6rem, 12vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+}
+
+.cert-lead {
+  margin: 1.6rem 0 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.15rem, 2.4vw, 1.35rem);
+  font-style: italic;
+  line-height: 1.55;
+  color: #c8bfb3;
+}
+
+.cert-lock {
+  margin: 1.2rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e05a12;
+}
+
+.cert-actions {
+  margin-top: 2.2rem;
+}
+
+.cert-actions a {
+  display: inline-block;
+  padding: 0.85rem 1.35rem;
+  background: #c45c2d;
+  color: #f8f1e6;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .cert-page {
+    padding: 8rem 2.5rem 6rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .cert-page {
+    padding-top: calc(8.75rem + env(safe-area-inset-top, 0px));
+  }
+}

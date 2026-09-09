@@ -1,19 +1,16 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./faq.css";
-
-const CERTIFICATE_URL =
-  "https://drive.google.com/drive/folders/1XQ0h_IaAfKm5y29VNC6OoCeNnbEH_vgC?usp=sharing";
 
 const faqs = [
   {
     q: "How can I get my certificates?",
     a: (
       <>
-        Certificates are shared on the Pragati Drive. Open{" "}
-        <a href={CERTIFICATE_URL} target="_blank" rel="noopener noreferrer">
-          Certificate
-        </a>{" "}
-        in the nav. Keep your GECW mail handy if you are asked to sign in.
+        Open{" "}
+        <Link to="/certificates">Certificate</Link>
+        {" "}
+        and sign in with a GECW college mail like name_21b410cs@gecwyd.ac.in. Then open Drive from that page. Certificates sit in folders for participation, volunteers, and winners.
       </>
     ),
   },
@@ -31,7 +28,7 @@ const faqs = [
   },
   {
     q: "I don't have a college mail. What can I still do?",
-    a: "You can still create an account, browse the fest, and register for workshops and proshows. Arts registration and the house table stay with GECW mail.",
+    a: "You can still create an account, browse the fest, and register for workshops and proshows. Arts registration, the house table, and certificates stay with GECW mail.",
   },
 ];
 

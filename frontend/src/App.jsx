@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import Unavailable from "./pages/Unavailable";
+import Certificates from "./pages/Certificates";
 import Dashboard from "./pages/Dashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/preevents" element={<PreEventsPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/unavailable" element={<Unavailable />} />
+          <Route path="/certificates" element={<Certificates />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
