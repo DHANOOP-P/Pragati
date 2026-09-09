@@ -7,6 +7,7 @@ import Winner from "../models/Winner.js";
 import PreEvent from "../models/PreEvent.js";
 import House from "../models/House.js";
 import { protect } from "../middleware/auth.js";
+import { HOUSE_TABLE } from "../utils/studentMeta.js";
 import { isCollegeEmail } from "../utils/collegeEmail.js";
 import { serializeGates, getServiceGates } from "../utils/serviceGates.js";
 
@@ -58,6 +59,9 @@ router.get("/points", protect, async (req, res) => {
     return res.status(403).json({
       message: "Point table is only for GEC Wayanad students. Sign in with your college mail.",
     });
+  }
+  for (const row of HOUSE_TABLE) {
+    await House.findOneAndUpdate({ name: row.name }, { $setOnInsert: row }, { upsert: true });
   }
   const houses = await House.find().sort({ points: -1, order: 1, name: 1 });
   res.json(houses.map((house, i) => ({ ...house.toObject(), rank: i + 1 })));

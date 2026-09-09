@@ -17,7 +17,7 @@ export const isOnstageEvent = (item) => {
 };
 
 const CARD_IMAGES = {
-  onstage: "/assets/stage/onstage.jpg",
+  onstage: "/assets/stage/onstage.png",
   offstage: "/assets/stage/offstage.jpg",
 };
 
@@ -161,7 +161,12 @@ const StageCards = ({ events = [] }) => {
                   <span className={`stage-card-bob ${settled && !reduce ? "is-live" : ""}`}>
                     <Link to={card.to} data-cursor="ENTER" className="stage-card-link">
                       <span className="stage-card-tilt">
-                        <img src={mediaUrl(card.image, 900)} alt="" loading="lazy" className="stage-card-img" />
+                        <img
+                          src={mediaUrl(card.image, 900)}
+                          alt=""
+                          loading="lazy"
+                          className={`stage-card-img${card.title === "Onstage" ? " is-onstage" : ""}`}
+                        />
                         <span className="stage-card-frame" aria-hidden />
                         <Arrow />
                         <div className="stage-card-plate">

@@ -7,6 +7,7 @@ import Ad from "./models/Ad.js";
 import Winner from "./models/Winner.js";
 import PreEvent from "./models/PreEvent.js";
 import House from "./models/House.js";
+import { HOUSE_TABLE } from "./utils/studentMeta.js";
 
 export async function seedDemoUsers() {
   const demos = [
@@ -502,15 +503,6 @@ export async function syncPreEvents() {
     await PreEvent.findOneAndUpdate({ title: row.title }, { $set: row }, { upsert: true });
   }
 }
-
-const HOUSE_TABLE = [
-  { name: "Themis", points: 288, order: 1 },
-  { name: "Maat", points: 252, order: 2 },
-  { name: "Justitia", points: 127, order: 3 },
-  { name: "Rashnu", points: 94, order: 4 },
-  { name: "Lugh", points: 72, order: 5 },
-  { name: "Marduk", points: 62, order: 6 },
-];
 
 export async function syncHouses() {
   for (const row of HOUSE_TABLE) {

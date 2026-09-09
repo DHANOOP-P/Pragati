@@ -7,6 +7,7 @@ import Ad from "../models/Ad.js";
 import Winner from "../models/Winner.js";
 import PreEvent from "../models/PreEvent.js";
 import House from "../models/House.js";
+import { HOUSE_TABLE } from "../utils/studentMeta.js";
 import Registration from "../models/Registration.js";
 import Certificate from "../models/Certificate.js";
 import User from "../models/User.js";
@@ -57,6 +58,9 @@ router.put("/service-gates", async (req, res) => {
 });
 
 router.get("/points", async (_req, res) => {
+  for (const row of HOUSE_TABLE) {
+    await House.findOneAndUpdate({ name: row.name }, { $setOnInsert: row }, { upsert: true });
+  }
   const houses = await House.find().sort({ order: 1, name: 1 });
   res.json(houses);
 });

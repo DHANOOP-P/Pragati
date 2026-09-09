@@ -49,7 +49,7 @@ const Footer = () => (
         </nav>
 
         <div className="site-foot-contact">
-          <a href="mailto:pragati@gecwyd.ac.in">pragati@gecwyd.ac.in</a>
+          <a href="mailto:pragati2024lead@gmail.com">pragati2024lead@gmail.com</a>
           <a
             href="https://www.instagram.com/pragati_gecw"
             target="_blank"
@@ -62,7 +62,7 @@ const Footer = () => (
       </div>
 
       <div className="site-foot-base">
-        <span>© 2026 · Libertad · GEC Wayanad</span>
+        <span>© 2024 · Libertad · GEC Wayanad</span>
         <div className="site-foot-houses" aria-hidden>
           <p>
             {houseLoop.map((name, i) => (

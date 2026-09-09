@@ -189,6 +189,11 @@
   transition: transform 0.7s ease;
 }
 
+.stage-card-img.is-onstage {
+  object-position: 46% 28%;
+  transform-origin: center 28%;
+}
+
 .stage-card-frame {
   pointer-events: none;
   position: absolute;

@@ -12,6 +12,7 @@ import registrationRoutes from "./routes/registrations.js";
 import paymentRoutes from "./routes/payments.js";
 import certificateRoutes from "./routes/certificates.js";
 import adminRoutes from "./routes/admin.js";
+import contactRoutes from "./routes/contact.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -76,6 +77,7 @@ const API_ALIASES = [
   "/payments",
   "/certificates",
   "/admin",
+  "/contact",
 ];
 
 app.use((req, _res, next) => {
@@ -97,6 +99,7 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.use((err, req, res, _next) => {
   console.error(err);

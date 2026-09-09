@@ -39,7 +39,7 @@ Locally, leave `VITE_API_URL` empty. Vite still proxies `/api` to `http://localh
    | `CLIENT_URL` | Exact Vercel origin, e.g. `https://pragati-ten-azure.vercel.app` (no trailing slash). `https://*.vercel.app` is also allowed in code. |
    | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | From `.env` |
    | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Posters |
-   | `SMTP_*` | Optional ticket email |
+   | `SMTP_*` | Gmail SMTP for tickets and the contact form. `CONTACT_TO` defaults to `pragati2024lead@gmail.com`. |
 
    Do not set `PORT`. Render sets it. Express already reads `process.env.PORT` and listens on `0.0.0.0`.
 

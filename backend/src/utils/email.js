@@ -1,14 +1,15 @@
 import nodemailer from "nodemailer";
 
-function hasSmtp() {
+export function hasSmtp() {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-export async function sendMail({ to, subject, html, attachments = [] }) {
+export async function sendMail({ to, subject, html, text, replyTo, attachments = [] }) {
   if (!hasSmtp()) {
     console.log("\n[EMAIL LOG — SMTP not configured]");
     console.log("To:", to);
     console.log("Subject:", subject);
+    if (replyTo) console.log("Reply-To:", replyTo);
     console.log("Attachments:", attachments.map((a) => a.filename).join(", ") || "none");
     console.log("HTML preview:", html.replace(/<[^>]+>/g, " ").slice(0, 240));
     console.log("");
@@ -30,6 +31,8 @@ export async function sendMail({ to, subject, html, attachments = [] }) {
     to,
     subject,
     html,
+    text,
+    replyTo,
     attachments,
   });
 

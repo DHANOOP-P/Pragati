@@ -6,6 +6,7 @@ import ErrorState from "../components/ui/ErrorState";
 import { isOnstageEvent } from "../components/sections/StageCards";
 import { isCollegeEmail } from "../utils/collegeEmail";
 import { isServiceOpen } from "../utils/serviceGates";
+import "./events.css";
 
 const STAGE_CARDS = [
   {
@@ -13,18 +14,20 @@ const STAGE_CARDS = [
     title: "Offstage",
     kicker: "Literary · film · fine arts",
     image: "/assets/stage/offstage.jpg",
+    tone: "offstage",
   },
   {
     stage: "onstage",
     title: "Onstage",
     kicker: "Dance · music · theatre",
-    image: "/assets/stage/onstage.jpg",
+    image: "/assets/stage/onstage.png",
+    tone: "onstage",
   },
 ];
 
 const KIND_CARDS = [
-  { kind: "group", title: "Group", kicker: "Up to 3 events" },
-  { kind: "individual", title: "Individual", kicker: "Up to 3 events" },
+  { kind: "group", title: "Group", kicker: "Up to 3 events", tone: "group" },
+  { kind: "individual", title: "Individual", kicker: "Up to 3 events", tone: "individual" },
 ];
 
 const emptyQuota = {
@@ -40,17 +43,19 @@ const fmtWhen = (value) => {
   return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 };
 
-const ChoiceCard = ({ to, title, kicker, image }) => (
-  <Link to={to} data-cursor="ENTER" className="group relative block min-h-[420px] overflow-hidden bg-ink">
+const ChoiceCard = ({ to, title, kicker, image, tone = "" }) => (
+  <Link to={to} data-cursor="ENTER" className={`choice-card${tone ? ` is-${tone}` : ""}`}>
+    <span className="choice-card-rim" aria-hidden />
+    <span className="choice-card-ticks" aria-hidden />
     {image ? (
-      <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+      <img src={image} alt="" className="choice-card-img" />
     ) : (
-      <div className="absolute inset-0 bg-gradient-to-br from-ember/25 via-ink to-gold/10" />
+      <span className="choice-card-wash" aria-hidden />
     )}
-    <div className="absolute inset-0 bg-gradient-to-t from-void via-void/35 to-transparent" />
-    <div className="absolute inset-x-0 bottom-0 p-8">
-      <p className="text-[11px] uppercase tracking-[0.35em] text-gold">{kicker}</p>
-      <h2 className="mt-2 font-display text-5xl md:text-7xl">{title}</h2>
+    <span className="choice-card-shade" aria-hidden />
+    <div className="choice-card-copy">
+      <p>{kicker}</p>
+      <h2>{title}</h2>
     </div>
   </Link>
 );
@@ -180,7 +185,7 @@ const Events = () => {
       )}
 
       {!stage && (
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="choice-cards mt-12 grid gap-6 md:grid-cols-2">
           {STAGE_CARDS.map((card) => (
             <ChoiceCard key={card.stage} to={`/events?stage=${card.stage}`} {...card} />
           ))}
@@ -188,9 +193,9 @@ const Events = () => {
       )}
 
       {stage === "onstage" && !kind && (
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="choice-cards mt-12 grid gap-6 md:grid-cols-2">
           {KIND_CARDS.map((card) => (
-            <ChoiceCard key={card.kind} to={`/events?stage=onstage&kind=${card.kind}`} title={card.title} kicker={card.kicker} />
+            <ChoiceCard key={card.kind} to={`/events?stage=onstage&kind=${card.kind}`} title={card.title} kicker={card.kicker} tone={card.tone} />
           ))}
         </div>
       )}

@@ -23,13 +23,19 @@ const FALLBACK_HOUSES = [
   { rank: 6, name: "Marduk", points: 62 },
 ];
 
-const withLook = (houses) =>
-  houses.map((house, i) => ({
-    rank: house.rank || i + 1,
-    name: house.name,
-    points: house.points,
-    ...(HOUSE_LOOK[house.name] || { ink: "#1a1816", paper: "#d8d2c8" }),
-  }));
+const withLook = (houses) => {
+  const byName = Object.fromEntries((houses || []).map((house) => [house.name, house]));
+  const rows = FALLBACK_HOUSES.map((fallback) => byName[fallback.name] || fallback);
+  return rows
+    .slice()
+    .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0) || String(a.name).localeCompare(b.name))
+    .map((house, i) => ({
+      rank: i + 1,
+      name: house.name,
+      points: house.points,
+      ...(HOUSE_LOOK[house.name] || { ink: "#1a1816", paper: "#d8d2c8" }),
+    }));
+};
 
 const HouseMark = ({ name, ink, paper }) => {
   const common = {
