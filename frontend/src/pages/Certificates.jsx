@@ -20,15 +20,22 @@ const Certificates = () => {
     <article className="cert-page">
       <p className="cert-kicker">Desk</p>
       <h1>Certificates</h1>
-      <p className="cert-lead">
-        Only students of GECWyd who login the Google Drive with college mail id in the format
-        name_admissionNumberBranch@gecwyd.ac.in can only access the certificates. Certificates are
-        properly arranged as specific folders — find your certificate on the respective folder.
-        Participation certificates, volunteer certificate and winners certificates are available now.
-      </p>
+      <div className="cert-lead">
+        <p>
+          Only students of GECWyd who login the Google Drive with college mail id in the format{" "}
+          <span className="cert-mail">name_<wbr />admissionNumberBranch<wbr />@gecwyd.ac.in</span>{" "}
+          can only access the certificates.
+        </p>
+        <p>
+          Certificates are properly arranged as specific folders — find your certificate on the
+          respective folder.
+        </p>
+        <p>Participation certificates, volunteer certificate and winners certificates are available now.</p>
+      </div>
       {!allowed ? (
         <p className="cert-lock">
-          Sign in with a GEC Wayanad college mail like name_21b410cs@gecwyd.ac.in to open the Drive.
+          Sign in with a GEC Wayanad college mail like{" "}
+          <span className="cert-mail">name_<wbr />21b410cs<wbr />@gecwyd.ac.in</span> to open the Drive.
         </p>
       ) : null}
       <div className="cert-actions">
