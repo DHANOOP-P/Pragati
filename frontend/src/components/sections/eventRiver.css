@@ -9,6 +9,19 @@
   z-index: 20;
 }
 
+.event-river.is-loading {
+  padding: 4.5rem 0 2.25rem;
+}
+
+.event-river.is-loading.is-page {
+  padding-top: 7.5rem;
+}
+
+.event-river-loading {
+  margin: 0;
+  padding: 0 1.5rem;
+}
+
 .event-river-pin {
   position: relative;
 }

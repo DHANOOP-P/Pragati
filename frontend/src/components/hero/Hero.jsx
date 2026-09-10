@@ -1,17 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { createTypeMorph, waitTypeFonts } from "./typeMorph";
 import "./hero.css";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const FRAME_COUNT = 70;
 const FRAMES = Array.from(
   { length: FRAME_COUNT },
   (_, i) => `/assets/theyyam/frames/theyyam_${String(i).padStart(2, "0")}.webp`
 );
+
+let frameCache = null;
+let frameLoad = null;
 
 const loadImage = (src) =>
   new Promise((resolve, reject) => {
@@ -21,6 +21,22 @@ const loadImage = (src) =>
     img.onerror = () => reject(new Error(src));
     img.src = src;
   });
+
+const loadFrames = () => {
+  if (frameCache) return Promise.resolve(frameCache);
+  if (!frameLoad) {
+    frameLoad = Promise.all(FRAMES.map(loadImage))
+      .then((imgs) => {
+        frameCache = imgs;
+        return imgs;
+      })
+      .catch((err) => {
+        frameLoad = null;
+        throw err;
+      });
+  }
+  return frameLoad;
+};
 
 const sizeCanvas = (canvas) => {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -47,8 +63,11 @@ const coverRect = (img, w, h) => {
   };
 };
 
+const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
 const Hero = () => {
   const root = useRef(null);
+  const pinRef = useRef(null);
   const seqRef = useRef(null);
   const emberRef = useRef(null);
   const typeRef = useRef(null);
@@ -56,9 +75,10 @@ const Hero = () => {
 
   useLayoutEffect(() => {
     const rootEl = root.current;
+    const pin = pinRef.current;
     const seq = seqRef.current;
     const ember = emberRef.current;
-    if (!rootEl || !seq) return undefined;
+    if (!rootEl || !pin || !seq) return undefined;
 
     const q = (sel) => rootEl.querySelector(sel);
 
@@ -71,6 +91,7 @@ const Hero = () => {
     let onMove = () => {};
     let typeMorph = { draw: () => {}, destroy: () => {} };
     let morphT = 0;
+    let tick = () => {};
     const paint = (f) => {
       if (!frameImgs.length) return;
       const n = frameImgs.length - 1;
@@ -102,6 +123,7 @@ const Hero = () => {
       const type = typeRef.current;
       if (!word || !year || !type) return;
       const run = (tries = 0) => {
+        if (cancelled) return;
         if (word.clientWidth < 80 && tries < 12) {
           requestAnimationFrame(() => run(tries + 1));
           return;
@@ -122,14 +144,26 @@ const Hero = () => {
       gsap.set(type, { opacity: t <= 0 ? 0 : 1 });
     };
 
+    const layout = () => {
+      const mobile = window.matchMedia("(max-width: 768px)").matches;
+      pin.style.height = `${window.innerHeight * (mobile ? 4.2 : 5.3)}px`;
+    };
+
+    const read = () => {
+      const span = pin.offsetHeight - window.innerHeight;
+      if (span <= 1) return 0;
+      return clamp(-pin.getBoundingClientRect().top / span, 0, 1);
+    };
+
     const onResize = () => {
       sizeCanvas(seq);
       if (ember) sizeCanvas(ember);
       const current = Math.max(0, lastFrame);
       lastFrame = -1;
       paint(current);
+      layout();
+      tick();
       rebuildType(window.matchMedia("(max-width: 768px)").matches);
-      ScrollTrigger.refresh();
     };
 
     const startEmbers = (mobile) => {
@@ -164,28 +198,14 @@ const Hero = () => {
     };
 
     const setupTimeline = (mobile) => {
-      gsap.set(q(".theyyam-wrap"), { scale: 1, force3D: true });
+      gsap.set(q(".theyyam-wrap"), { scale: 1, x: 0, y: 0, filter: "none", force3D: true });
       gsap.set([q(".hero-lang-en"), q(".hero-lang-ml"), q(".hero-year")], { opacity: 0 });
       gsap.set(typeRef.current, { opacity: 0 });
       applyMorph(0);
 
       const seqState = { f: 0 };
       const morph = { t: 0 };
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: rootEl,
-          start: "top top",
-          end: mobile ? "+=320%" : "+=430%",
-          pin: true,
-          pinSpacing: true,
-          scrub: 0.45,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            rootEl.style.setProperty("--hero-p", String(self.progress));
-          },
-        },
-      });
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
 
       tl.addLabel("start", 0)
         .to(q(".hero-hint"), { opacity: 0, duration: 0.55 }, 0)
@@ -237,9 +257,19 @@ const Hero = () => {
         )
         .to(q(".hero-veil"), { opacity: 0.72, duration: 1 }, 7.9);
 
+      tick = () => {
+        const p = read();
+        tl.progress(p);
+        rootEl.style.setProperty("--hero-p", String(p));
+      };
+
+      layout();
+      tick();
+      gsap.ticker.add(tick);
+
       const wrap = q(".theyyam-wrap");
-      const mx = gsap.quickTo(wrap, "x", { duration: 0.8, ease: "power3.out" });
-      const my = gsap.quickTo(wrap, "y", { duration: 0.8, ease: "power3.out" });
+      const mx = gsap.quickTo(wrap, "x", { duration: 0.45, ease: "power3.out" });
+      const my = gsap.quickTo(wrap, "y", { duration: 0.45, ease: "power3.out" });
       onMove = (e) => {
         if (!window.matchMedia("(hover: hover)").matches) return;
         mx((e.clientX / window.innerWidth - 0.5) * 8);
@@ -254,6 +284,7 @@ const Hero = () => {
     const startHero = () => {
       if (reduce) {
         rootEl.classList.add("is-static");
+        pin.style.height = "";
         lastFrame = -1;
         paint(FRAMES.length - 1);
         gsap.set(q(".hero-billboard"), { opacity: 1, y: 0 });
@@ -265,79 +296,97 @@ const Hero = () => {
 
       const mobile = window.matchMedia("(max-width: 768px)").matches;
       startEmbers(mobile);
-      waitTypeFonts(48).then(() => {
+      const run = () => {
         if (cancelled) return;
         rebuildType(mobile);
         ctx = gsap.context(() => setupTimeline(mobile), rootEl);
-        requestAnimationFrame(() => ScrollTrigger.refresh());
-      });
+      };
+      if (document.fonts?.status === "loaded") run();
+      else waitTypeFonts(48).then(run);
     };
 
-    loadImage(FRAMES[0])
-      .then(async (first) => {
+    const boot = async () => {
+      try {
+        if (frameCache) {
+          frameImgs = frameCache;
+          paint(0);
+          startHero();
+          return;
+        }
+        const first = await loadImage(FRAMES[0]);
         if (cancelled) return;
         frameImgs = [first];
         paint(0);
-        const rest = await Promise.all(FRAMES.slice(1).map(loadImage));
+        const rest = await loadFrames();
         if (cancelled) return;
-        frameImgs = [first, ...rest];
+        frameImgs = rest;
         lastFrame = -1;
         paint(0);
         startHero();
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
-      });
+      }
+    };
+
+    boot();
 
     return () => {
       cancelled = true;
       drawing = false;
       cancelAnimationFrame(raf);
+      gsap.ticker.remove(tick);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onMove);
       typeMorph.destroy?.();
       ctx?.revert();
+      gsap.set(q(".theyyam-wrap"), { clearProps: "transform,filter,x,y,scale" });
+      pin.style.height = "";
+      rootEl.style.removeProperty("--hero-p");
     };
   }, [reduce]);
 
   return (
     <section ref={root} className="hero-theyyam" aria-label="Theyyam awakening into Pragati">
-      <div className="hero-bg" />
+      <div ref={pinRef} className="hero-pin">
+        <div className="hero-sticky">
+          <div className="hero-bg" />
 
-      <div className="theyyam-stage">
-        <div className="theyyam-wrap">
-          <canvas ref={seqRef} className="theyyam-seq" aria-hidden />
-          <div className="theyyam-grade" aria-hidden>
-            <span className="theyyam-grade-dark" />
-            <span className="theyyam-grade-warm" />
-            <span className="theyyam-grade-glow" />
-            <span className="theyyam-grade-edge" />
+          <div className="theyyam-stage">
+            <div className="theyyam-wrap">
+              <canvas ref={seqRef} className="theyyam-seq" aria-hidden />
+              <div className="theyyam-grade" aria-hidden>
+                <span className="theyyam-grade-dark" />
+                <span className="theyyam-grade-warm" />
+                <span className="theyyam-grade-glow" />
+                <span className="theyyam-grade-edge" />
+              </div>
+              <div className="theyyam-rim" />
+            </div>
           </div>
-          <div className="theyyam-rim" />
+
+          <div className="hero-light" aria-hidden />
+          <canvas ref={emberRef} className="hero-embers" aria-hidden />
+          <div className="hero-haze" aria-hidden />
+
+          <canvas ref={typeRef} className="hero-type" aria-hidden />
+          <div className="hero-copy">
+            <h1 className="sr-only">Pragati 24 · GEC Wayanad Arts Festival · GECW Arts</h1>
+            <div className="hero-billboard" aria-hidden="true">
+              <div className="hero-word">
+                <span className="hero-lang hero-lang-en">PRAGATI</span>
+                <span className="hero-lang hero-lang-ml">പ്രഗതി</span>
+              </div>
+              <p className="hero-year">2025</p>
+            </div>
+          </div>
+
+          <p className="hero-hint">
+            <span>Scroll to enter</span>
+            <span className="hero-hint-line" aria-hidden />
+          </p>
+          <div className="hero-veil" aria-hidden />
         </div>
       </div>
-
-      <div className="hero-light" aria-hidden />
-      <canvas ref={emberRef} className="hero-embers" aria-hidden />
-      <div className="hero-haze" aria-hidden />
-
-      <canvas ref={typeRef} className="hero-type" aria-hidden />
-      <div className="hero-copy">
-        <h1 className="sr-only">Pragati 24 · GEC Wayanad Arts Festival · GECW Arts</h1>
-        <div className="hero-billboard" aria-hidden="true">
-          <div className="hero-word">
-            <span className="hero-lang hero-lang-en">PRAGATI</span>
-            <span className="hero-lang hero-lang-ml">പ്രഗതി</span>
-          </div>
-          <p className="hero-year">2025</p>
-        </div>
-      </div>
-
-      <p className="hero-hint">
-        <span>Scroll to enter</span>
-        <span className="hero-hint-line" aria-hidden />
-      </p>
-      <div className="hero-veil" aria-hidden />
     </section>
   );
 };

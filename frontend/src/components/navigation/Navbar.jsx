@@ -74,7 +74,7 @@ const Navbar = () => {
             initial={{ clipPath: "circle(0% at 100% 0%)" }}
             animate={{ clipPath: "circle(150% at 100% 0%)" }}
             exit={{ clipPath: "circle(0% at 100% 0%)" }}
-            transition={{ duration: 0.45 }}
+            transition={{ duration: 0.28 }}
             className="fixed inset-0 z-[70] flex flex-col justify-end bg-void px-8 pb-16"
           >
             <BrandMark className="absolute left-8 top-5 h-12 w-auto" decorative />

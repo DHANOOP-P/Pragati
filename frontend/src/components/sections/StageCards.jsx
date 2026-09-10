@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import gsap from "gsap";
@@ -78,7 +78,7 @@ const StageCards = ({ events = [] }) => {
   const onstage = events.filter(isOnstageEvent);
   const offstage = events.filter((item) => !isOnstageEvent(item));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (reduce) {
       progress.set(1);
       setSettled(true);

@@ -1,11 +1,23 @@
 .hero-theyyam {
   position: relative;
   z-index: 30;
+  overflow: visible;
+  background: #050308;
+  isolation: isolate;
+}
+
+.hero-pin {
+  position: relative;
+}
+
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
   background: #050308;
-  isolation: isolate;
 }
 
 .hero-theyyam.is-static .hero-billboard,

@@ -17,6 +17,11 @@
   z-index: 2;
 }
 
+.pre-events-loading {
+  margin: 0 0 0.35rem;
+  padding: 0 1.5rem;
+}
+
 .pre-events-head {
   position: relative;
   z-index: 2;

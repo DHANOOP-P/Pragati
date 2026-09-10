@@ -1,6 +1,5 @@
 import { useCallback, useLayoutEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "../navigation/Navbar";
 import Footer from "./Footer";
 import Cursor from "../ui/Cursor";
@@ -31,26 +30,17 @@ const Layout = () => {
 
   return (
     <LayoutChromeProvider value={{ setHideFooter: setFooterHidden }}>
-    <div className="relative min-h-screen bg-void text-paper">
-      {!isAdmin && <Atmosphere />}
-      <div className="grain" aria-hidden />
-      <div className="vignette" aria-hidden />
-      <Cursor />
-      <Navbar />
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.28 }}
-          className="relative z-10"
-        >
+      <div className="relative min-h-screen bg-void text-paper">
+        {!isAdmin && <Atmosphere />}
+        <div className="grain" aria-hidden />
+        <div className="vignette" aria-hidden />
+        <Cursor />
+        <Navbar />
+        <main className="relative z-10">
           <Outlet />
-        </motion.main>
-      </AnimatePresence>
-      {!booting && !hideFooter && <Footer />}
-    </div>
+        </main>
+        {!booting && !hideFooter && <Footer />}
+      </div>
     </LayoutChromeProvider>
   );
 };

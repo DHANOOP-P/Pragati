@@ -1,12 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const homeScroll = { y: 0 };
+const readHomeY = () => {
+  const n = Number(sessionStorage.getItem("pragati_home_y") || 0);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const homeScroll = { y: readHomeY() };
+
+const saveHomeY = (y) => {
+  homeScroll.y = y;
+  try {
+    sessionStorage.setItem("pragati_home_y", String(Math.round(y)));
+  } catch {
+    /* private mode */
+  }
+};
 
 export function useLenis() {
   const location = useLocation();
@@ -23,11 +38,11 @@ export function useLenis() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return undefined;
 
-    const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+    const lenis = new Lenis({ duration: 0.72, smoothWheel: true, lerp: 0.12 });
     lenisRef.current = lenis;
     lenis.on("scroll", () => {
       ScrollTrigger.update();
-      if (pathRef.current === "/") homeScroll.y = lenis.scroll;
+      if (pathRef.current === "/") saveHomeY(lenis.scroll);
     });
     const ticker = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(ticker);
@@ -52,34 +67,20 @@ export function useLenis() {
   useEffect(() => {
     const save = () => {
       if (pathRef.current !== "/") return;
-      homeScroll.y = lenisRef.current?.scroll ?? window.scrollY;
+      saveHomeY(lenisRef.current?.scroll ?? window.scrollY);
     };
     window.addEventListener("scroll", save, { passive: true });
     return () => window.removeEventListener("scroll", save);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const restoreHome = location.pathname === "/" && navType === "POP" && homeScroll.y > 8;
     const y = restoreHome ? homeScroll.y : 0;
 
-    const apply = () => {
-      lenisRef.current?.scrollTo(y, { immediate: true });
-      window.scrollTo(0, y);
-      ScrollTrigger.refresh();
-    };
+    lenisRef.current?.scrollTo(y, { immediate: true, force: true });
+    window.scrollTo(0, y);
 
-    const ids = [requestAnimationFrame(apply)];
-    if (restoreHome) {
-      ids.push(requestAnimationFrame(() => requestAnimationFrame(apply)));
-      const t1 = window.setTimeout(apply, 80);
-      const t2 = window.setTimeout(apply, 320);
-      return () => {
-        ids.forEach((id) => cancelAnimationFrame(id));
-        window.clearTimeout(t1);
-        window.clearTimeout(t2);
-      };
-    }
-
-    return () => ids.forEach((id) => cancelAnimationFrame(id));
+    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(id);
   }, [location.pathname, navType]);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -28,27 +28,31 @@ const waitImages = (root) =>
     )
   );
 
-const PreEvents = ({ asPage = false, items: given }) => {
+const PreEvents = ({ asPage = false, items: given, loading: givenLoading }) => {
   const reduce = useReducedMotion();
   const pinRef = useRef(null);
   const stickyRef = useRef(null);
   const sceneRef = useRef(null);
   const trackRef = useRef(null);
   const [items, setItems] = useState(given || []);
+  const [selfLoading, setSelfLoading] = useState(given === undefined);
+  const loading = given !== undefined ? Boolean(givenLoading) : selfLoading;
 
   useEffect(() => {
     if (given !== undefined) {
       setItems(given);
       return undefined;
     }
+    setSelfLoading(true);
     api
       .get("/preevents")
       .then((res) => setItems(res.data || []))
-      .catch(() => setItems([]));
+      .catch(() => setItems([]))
+      .finally(() => setSelfLoading(false));
     return undefined;
   }, [given]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const pin = pinRef.current;
     const sticky = stickyRef.current;
     const scene = sceneRef.current;
@@ -108,25 +112,33 @@ const PreEvents = ({ asPage = false, items: given }) => {
             y: 0,
             rotate: 0,
             ease: "none",
+            immediateRender: true,
             scrollTrigger: {
               trigger: card,
               start: "top 92%",
               end: "top 52%",
-              scrub: 0.65,
+              scrub: 0.35,
             },
           }
         )
       );
-      return () => tweens.forEach((tween) => tween.scrollTrigger?.kill() || tween.kill());
+      return () => {
+        tweens.forEach((tween) => tween.scrollTrigger?.kill() || tween.kill());
+        gsap.set(track.querySelectorAll(".pre-event-card"), { clearProps: "transform,y,rotate" });
+      };
     });
 
     return () => mm.revert();
   }, [reduce, items.length]);
 
-  if (!items.length && !asPage) return null;
+  if (!items.length && !asPage && !loading) return null;
 
   return (
-    <section className={`pre-events${asPage ? " is-page" : ""}`} aria-label="Pre events">
+    <section
+      className={`pre-events${asPage ? " is-page" : ""}${loading && !items.length ? " is-loading" : ""}`}
+      aria-label="Pre events"
+      aria-busy={loading && !items.length}
+    >
       <div ref={pinRef} className="pre-events-pin">
         <div ref={stickyRef} className="pre-events-sticky">
           <div className="pre-events-head">
@@ -147,28 +159,33 @@ const PreEvents = ({ asPage = false, items: given }) => {
               </Link>
             )}
           </div>
+          {loading && !items.length ? (
+            <p className="pre-events-loading font-serif text-lg italic text-mute">Loading…</p>
+          ) : null}
 
-          <div ref={sceneRef} className="pre-events-scene">
-            <div ref={trackRef} className="pre-events-track">
-              {items.map((item, i) => (
-                <article key={item._id || item.title} className="pre-event-card">
-                  <div className="pre-event-shell">
-                    {item.image ? <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" /> : null}
-                    <div className="pre-event-copy">
-                      <p className="text-[11px] uppercase tracking-[0.32em] text-ember">
-                        {String(i + 1).padStart(2, "0")} · {item.category || "Campus"}
-                      </p>
-                      <h3>{item.title}</h3>
-                      {item.description ? <p>{item.description}</p> : null}
-                      <span className="pre-event-meta">
-                        {[fmtWhen(item.date), item.venue].filter(Boolean).join(" · ")}
-                      </span>
+          {items.length ? (
+            <div ref={sceneRef} className="pre-events-scene">
+              <div ref={trackRef} className="pre-events-track">
+                {items.map((item, i) => (
+                  <article key={item._id || item.title} className="pre-event-card">
+                    <div className="pre-event-shell">
+                      {item.image ? <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" /> : null}
+                      <div className="pre-event-copy">
+                        <p className="text-[11px] uppercase tracking-[0.32em] text-ember">
+                          {String(i + 1).padStart(2, "0")} · {item.category || "Campus"}
+                        </p>
+                        <h3>{item.title}</h3>
+                        {item.description ? <p>{item.description}</p> : null}
+                        <span className="pre-event-meta">
+                          {[fmtWhen(item.date), item.venue].filter(Boolean).join(" · ")}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </section>

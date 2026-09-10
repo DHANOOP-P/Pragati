@@ -1,13 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import api from "../../api/client";
 import ErrorState from "../ui/ErrorState";
 import { mediaUrl } from "../../utils/media";
 import "./eventRiver.css";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const TICKER = ["grab tickets", "ensure your seat", "enjoy the night"];
 const tickerLoop = [...TICKER, ...TICKER, ...TICKER];
@@ -27,6 +24,7 @@ const EventRiver = ({
   title = "Night court",
   kicker = "Proshow · paid",
   items: given,
+  loading: givenLoading,
   pathBase = "/proshows",
   badge,
   toAll = "/proshows",
@@ -37,16 +35,20 @@ const EventRiver = ({
   const sceneRef = useRef(null);
   const [items, setItems] = useState(given || []);
   const [error, setError] = useState(false);
+  const [selfLoading, setSelfLoading] = useState(given === undefined);
+  const loading = given !== undefined ? Boolean(givenLoading) : selfLoading;
 
   const load = () => {
     setError(false);
+    setSelfLoading(true);
     api
       .get("/proshows")
       .then((res) => setItems(res.data || []))
       .catch((err) => {
         console.error(err);
         setError(true);
-      });
+      })
+      .finally(() => setSelfLoading(false));
   };
 
   useEffect(() => {
@@ -138,9 +140,8 @@ const EventRiver = ({
     const tick = () => apply(read());
 
     layout();
-    apply(0);
+    tick();
     gsap.ticker.add(tick);
-    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     const onResize = () => {
       layout();
@@ -151,11 +152,38 @@ const EventRiver = ({
     return () => {
       gsap.ticker.remove(tick);
       window.removeEventListener("resize", onResize);
+      gsap.set(cards, { clearProps: "transform,opacity,x,y,scale,rotate,zIndex" });
       pin.style.height = "";
     };
   }, [items?.length]);
 
   if (error && asPage) return <ErrorState onRetry={load} />;
+  if (loading && !items?.length) {
+    return (
+      <section
+        className={`event-river is-loading${asPage ? " is-page" : ""}`}
+        aria-label={title}
+        aria-busy="true"
+      >
+        <div className="event-river-head">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-ember">{kicker}</p>
+            {asPage ? (
+              <h1 className="mt-2 font-display text-5xl md:text-7xl">{title}</h1>
+            ) : (
+              <h2 className="mt-2 font-display text-5xl md:text-7xl">{title}</h2>
+            )}
+          </div>
+          {!asPage && toAll ? (
+            <Link to={toAll} className="text-[11px] uppercase tracking-[0.28em] text-gold">
+              All
+            </Link>
+          ) : null}
+        </div>
+        <p className="event-river-loading font-serif text-lg italic text-mute">Loading…</p>
+      </section>
+    );
+  }
   if (!items?.length && !asPage) return null;
 
   return (

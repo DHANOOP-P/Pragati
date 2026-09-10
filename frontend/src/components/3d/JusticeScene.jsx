@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Environment, Float } from "@react-three/drei";
 import * as THREE from "three";
@@ -208,7 +208,19 @@ function ScaleOfJustice({ reduce, spin }) {
 }
 
 const JusticeScene = ({ reduce = false }) => {
+  const wrap = useRef(null);
   const spin = useRef({ yaw: 0, pitch: 0, dragging: false, x: 0, y: 0 });
+  const [live, setLive] = useState(true);
+
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting), {
+      threshold: 0.08,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const onPointerDown = (e) => {
     spin.current.dragging = true;
@@ -231,6 +243,7 @@ const JusticeScene = ({ reduce = false }) => {
 
   return (
     <div
+      ref={wrap}
       className="idea-stage-canvas absolute inset-0"
       data-cursor="Weigh"
       onPointerDown={onPointerDown}
@@ -239,6 +252,7 @@ const JusticeScene = ({ reduce = false }) => {
       onPointerCancel={onPointerUp}
     >
       <Canvas
+        frameloop={live && !reduce ? "always" : "demand"}
         shadows
         dpr={[1, 1.6]}
         camera={{ position: [0.08, 0.38, 3.45], fov: 32, near: 0.1, far: 40 }}

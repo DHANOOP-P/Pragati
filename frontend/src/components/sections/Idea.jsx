@@ -1,3 +1,5 @@
+import { useLayoutEffect } from "react";
+import gsap from "gsap";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import JusticeScene from "../3d/JusticeScene";
 
@@ -8,8 +10,33 @@ const lines = [
   ["THEN", "IT SINGS."],
 ];
 
+const clamp01 = (t) => Math.max(0, Math.min(1, t));
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
+
 const Idea = () => {
   const reduce = useReducedMotion();
+
+  useLayoutEffect(() => {
+    if (reduce) return undefined;
+    const el = document.getElementById("idea");
+    if (!el) return undefined;
+
+    const tick = () => {
+      const h = window.innerHeight || 1;
+      const r = el.getBoundingClientRect();
+      const formAmt = clamp01((h * 0.28 - r.top) / (h * 0.48));
+      el.style.setProperty("--idea-in", String(easeInOut(clamp01((formAmt - 0.42) / 0.24))));
+      el.style.setProperty("--idea-copy", String(easeInOut(clamp01((formAmt - 0.62) / 0.18))));
+    };
+
+    tick();
+    gsap.ticker.add(tick);
+    return () => {
+      gsap.ticker.remove(tick);
+      el.style.removeProperty("--idea-in");
+      el.style.removeProperty("--idea-copy");
+    };
+  }, [reduce]);
 
   return (
     <section

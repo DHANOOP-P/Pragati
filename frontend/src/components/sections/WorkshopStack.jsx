@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -53,7 +53,7 @@ const WorkshopStack = ({ asPage = false }) => {
       .catch(() => setCards(FEATURED));
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root || reduce) return undefined;
 
@@ -74,6 +74,7 @@ const WorkshopStack = ({ asPage = false }) => {
             ease: scrub ? "none" : "power3.out",
             duration: scrub ? undefined : 0.7,
             immediateRender: true,
+            overwrite: true,
             scrollTrigger: scrub
               ? {
                   trigger: card,
@@ -96,12 +97,13 @@ const WorkshopStack = ({ asPage = false }) => {
     mm.add("(min-width: 768px)", () => popCards(80, true));
 
     const refresh = () => ScrollTrigger.refresh();
-    requestAnimationFrame(refresh);
+    refresh();
     window.addEventListener("load", refresh);
 
     return () => {
       window.removeEventListener("load", refresh);
       mm.revert();
+      gsap.set(root.querySelectorAll(".workshop-pop-inner"), { clearProps: "transform,filter,y" });
     };
   }, [reduce, cards.length]);
 
