@@ -323,7 +323,7 @@ const Hero = () => {
 
       <canvas ref={typeRef} className="hero-type" aria-hidden />
       <div className="hero-copy">
-        <h1 className="sr-only">PRAGATI 2025</h1>
+        <h1 className="sr-only">Pragati 24 · GEC Wayanad Arts Festival · GECW Arts</h1>
         <div className="hero-billboard" aria-hidden="true">
           <div className="hero-word">
             <span className="hero-lang hero-lang-en">PRAGATI</span>

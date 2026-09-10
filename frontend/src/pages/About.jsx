@@ -11,8 +11,9 @@ const About = () => (
     <section className="about-block" aria-labelledby="about-pragati">
       <h2 id="about-pragati">Pragati</h2>
       <p>
-        Pragati is the arts festival of Government Engineering College Wayanad — a week of music, dance,
-        theatre, film, letter, and colour hosted by Libertad College Union.
+        Pragati 24 (Pragati24) is the arts festival of Government Engineering College Wayanad — a week of
+        music, dance, theatre, film, letter, and colour hosted by Libertad College Union. Students also
+        know it as GEC Wayanad arts, GECW arts, and the GECW arts fest.
       </p>
       <p>
         The fest is run through six houses. Students take the docket onstage and offstage, join workshops,

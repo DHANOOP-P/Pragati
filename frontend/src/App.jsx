@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import Seo from "./seo/Seo";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import Home from "./pages/Home";
@@ -31,6 +32,7 @@ import AdminEventRegistrations from "./pages/admin/AdminEventRegistrations";
 const App = () => (
   <AuthProvider>
     <BrowserRouter>
+      <Seo />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
