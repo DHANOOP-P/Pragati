@@ -87,7 +87,7 @@ export function mergeProshows(live) {
       list.find((item) => item.title === card.title && !used.has(String(item._id)));
     if (!hit) return card;
     used.add(String(hit._id));
-    return { ...card, ...hit, image: card.image };
+    return { ...card, ...hit, image: hit.image || card.image };
   });
   const extras = list.filter((item) => item?._id && !used.has(String(item._id)));
   return extras.length ? [...merged, ...extras] : merged;
@@ -101,7 +101,7 @@ export function mergePreevents(live) {
     const hit = list.find((item) => item.title === card.title && !used.has(String(item._id)));
     if (!hit) return card;
     used.add(String(hit._id));
-    return { ...card, ...hit, image: card.image };
+    return { ...card, ...hit, image: hit.image || card.image };
   });
   const extras = list.filter((item) => item?._id && !used.has(String(item._id)));
   return extras.length ? [...merged, ...extras] : merged;
