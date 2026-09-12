@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import api from "../../api/client";
 import ErrorState from "../ui/ErrorState";
+import { FEATURED_PROSHOWS, mergeProshows } from "../../data/featuredCatalog";
 import { mediaUrl } from "../../utils/media";
 import "./eventRiver.css";
 
@@ -33,7 +34,7 @@ const EventRiver = ({
 }) => {
   const pinRef = useRef(null);
   const sceneRef = useRef(null);
-  const [items, setItems] = useState(given || []);
+  const [items, setItems] = useState(() => (given?.length ? given : FEATURED_PROSHOWS));
   const [error, setError] = useState(false);
   const [selfLoading, setSelfLoading] = useState(given === undefined);
   const loading = given !== undefined ? Boolean(givenLoading) : selfLoading;
@@ -43,17 +44,18 @@ const EventRiver = ({
     setSelfLoading(true);
     api
       .get("/proshows")
-      .then((res) => setItems(res.data || []))
+      .then((res) => setItems(mergeProshows(res.data)))
       .catch((err) => {
         console.error(err);
         setError(true);
+        setItems((cur) => (cur.length ? cur : FEATURED_PROSHOWS));
       })
       .finally(() => setSelfLoading(false));
   };
 
   useEffect(() => {
     if (given !== undefined) {
-      setItems(given);
+      setItems(given.length ? given : FEATURED_PROSHOWS);
       return undefined;
     }
     load();
@@ -157,8 +159,8 @@ const EventRiver = ({
     };
   }, [items?.length]);
 
-  if (error && asPage) return <ErrorState onRetry={load} />;
-  if (loading && !items?.length) {
+  if (error && asPage && !items?.length) return <ErrorState onRetry={load} />;
+  if (asPage && loading && !items?.length) {
     return (
       <section
         className={`event-river is-loading${asPage ? " is-page" : ""}`}
@@ -229,9 +231,9 @@ const EventRiver = ({
             {items.map((item, i) => {
               const price = priceKey === "free" ? 0 : item.price;
               return (
-                <article key={item._id} className="event-river-card">
+                <article key={item._id || item.artist || item.title} className="event-river-card">
                   <Link
-                    to={`${pathBase}/${item._id}`}
+                    to={item._id ? `${pathBase}/${item._id}` : toAll || pathBase}
                     data-cursor="ENTER"
                     className="event-river-shell"
                   >

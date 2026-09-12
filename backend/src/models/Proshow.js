@@ -16,4 +16,6 @@ const proshowSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+proshowSchema.index({ isOpen: 1, date: 1 });
+
 export default mongoose.model("Proshow", proshowSchema);

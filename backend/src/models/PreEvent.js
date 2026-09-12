@@ -13,4 +13,6 @@ const preEventSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+preEventSchema.index({ isOpen: 1, date: 1 });
+
 export default mongoose.model("PreEvent", preEventSchema);

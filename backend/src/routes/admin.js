@@ -17,32 +17,39 @@ import { normalizeName } from "../utils/ticket.js";
 import { publicFileUrl } from "../utils/pdf.js";
 import { isCloudinaryReady, uploadBuffer, listImages } from "../utils/cloudinary.js";
 import { getServiceGates, serializeGates } from "../utils/serviceGates.js";
+import { catalogCacheClear } from "../utils/catalogCache.js";
 
 const router = Router();
 router.use(protect, adminOnly);
 
-function crud(Model) {
+function crud(Model, { onChange } = {}) {
   const r = Router();
   r.get("/", async (_req, res) => res.json(await Model.find().sort({ createdAt: -1 })));
-  r.post("/", async (req, res) => res.status(201).json(await Model.create(req.body)));
+  r.post("/", async (req, res) => {
+    const item = await Model.create(req.body);
+    onChange?.();
+    res.status(201).json(item);
+  });
   r.put("/:id", async (req, res) => {
     const item = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!item) return res.status(404).json({ message: "Not found" });
+    onChange?.();
     res.json(item);
   });
   r.delete("/:id", async (req, res) => {
     await Model.findByIdAndDelete(req.params.id);
+    onChange?.();
     res.json({ ok: true });
   });
   return r;
 }
 
 router.use("/events", crud(ArtsEvent));
-router.use("/workshops", crud(Workshop));
-router.use("/proshows", crud(Proshow));
+router.use("/workshops", crud(Workshop, { onChange: () => catalogCacheClear("workshops") }));
+router.use("/proshows", crud(Proshow, { onChange: () => catalogCacheClear("proshows") }));
 router.use("/ads", crud(Ad));
 router.use("/winners", crud(Winner));
-router.use("/preevents", crud(PreEvent));
+router.use("/preevents", crud(PreEvent, { onChange: () => catalogCacheClear("preevents") }));
 
 router.get("/service-gates", async (_req, res) => {
   res.json(serializeGates(await getServiceGates()));

@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import api from "../../api/client";
+import { FEATURED_PREEVENTS, mergePreevents } from "../../data/featuredCatalog";
 import { mediaUrl } from "../../utils/media";
 import "./preEvents.css";
 
@@ -34,20 +35,20 @@ const PreEvents = ({ asPage = false, items: given, loading: givenLoading }) => {
   const stickyRef = useRef(null);
   const sceneRef = useRef(null);
   const trackRef = useRef(null);
-  const [items, setItems] = useState(given || []);
+  const [items, setItems] = useState(() => (given?.length ? given : FEATURED_PREEVENTS));
   const [selfLoading, setSelfLoading] = useState(given === undefined);
   const loading = given !== undefined ? Boolean(givenLoading) : selfLoading;
 
   useEffect(() => {
     if (given !== undefined) {
-      setItems(given);
+      setItems(given.length ? given : FEATURED_PREEVENTS);
       return undefined;
     }
     setSelfLoading(true);
     api
       .get("/preevents")
-      .then((res) => setItems(res.data || []))
-      .catch(() => setItems([]))
+      .then((res) => setItems(mergePreevents(res.data)))
+      .catch(() => setItems(FEATURED_PREEVENTS))
       .finally(() => setSelfLoading(false));
     return undefined;
   }, [given]);
@@ -131,13 +132,13 @@ const PreEvents = ({ asPage = false, items: given, loading: givenLoading }) => {
     return () => mm.revert();
   }, [reduce, items.length]);
 
-  if (!items.length && !asPage && !loading) return null;
+  if (!items.length && !asPage) return null;
 
   return (
     <section
-      className={`pre-events${asPage ? " is-page" : ""}${loading && !items.length ? " is-loading" : ""}`}
+      className={`pre-events${asPage ? " is-page" : ""}${asPage && loading && !items.length ? " is-loading" : ""}`}
       aria-label="Pre events"
-      aria-busy={loading && !items.length}
+      aria-busy={asPage && loading && !items.length}
     >
       <div ref={pinRef} className="pre-events-pin">
         <div ref={stickyRef} className="pre-events-sticky">
@@ -159,7 +160,7 @@ const PreEvents = ({ asPage = false, items: given, loading: givenLoading }) => {
               </Link>
             )}
           </div>
-          {loading && !items.length ? (
+          {asPage && loading && !items.length ? (
             <p className="pre-events-loading font-serif text-lg italic text-mute">Loading…</p>
           ) : null}
 

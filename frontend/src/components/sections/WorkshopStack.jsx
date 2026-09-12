@@ -42,13 +42,16 @@ const WorkshopStack = ({ asPage = false }) => {
     api
       .get("/workshops")
       .then((res) => {
+        const live = Array.isArray(res.data) ? res.data : [];
+        const used = new Set();
         const mapped = FEATURED.map((card) => {
-          const live = (res.data || []).find((item) => item.title === card.title);
-          return live
-            ? { ...card, ...live, image: card.image, _id: live._id }
-            : card;
+          const hit = live.find((item) => item.title === card.title && !used.has(String(item._id)));
+          if (!hit) return card;
+          used.add(String(hit._id));
+          return { ...card, ...hit, image: card.image, _id: hit._id };
         });
-        setCards(mapped);
+        const extras = live.filter((item) => item?._id && !used.has(String(item._id)));
+        setCards(extras.length ? [...mapped, ...extras] : mapped);
       })
       .catch(() => setCards(FEATURED));
   }, []);

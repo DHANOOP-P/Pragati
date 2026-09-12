@@ -145,6 +145,7 @@
   .pre-events-scene {
     overflow: hidden;
     padding: 0.85rem 0 0.4rem;
+    container-type: inline-size;
   }
 
   .pre-events-track {
@@ -157,7 +158,7 @@
   }
 
   .pre-event-card {
-    flex: 0 0 calc((100vw - var(--pre-pad) * 2 - var(--pre-gap) * 2) / 3);
+    flex: 0 0 calc((100cqi - var(--pre-pad) * 2 - var(--pre-gap) * 2) / 3);
     min-height: min(58vh, 34rem);
   }
 

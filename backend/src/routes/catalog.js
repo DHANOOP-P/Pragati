@@ -10,8 +10,21 @@ import { protect } from "../middleware/auth.js";
 import { HOUSE_TABLE } from "../utils/studentMeta.js";
 import { isCollegeEmail } from "../utils/collegeEmail.js";
 import { serializeGates, getServiceGates } from "../utils/serviceGates.js";
+import { catalogCacheGet, catalogCacheSet } from "../utils/catalogCache.js";
 
 const router = Router();
+const OPEN = { isOpen: { $ne: false } };
+const WORKSHOP_FIELDS = "title description date venue image mentor price capacity registeredCount isOpen";
+const PROSHOW_FIELDS = "title description date venue image artist price capacity registeredCount isOpen";
+const PREEVENT_FIELDS = "title description date venue image category isOpen";
+
+async function cachedList(key, query) {
+  const hit = catalogCacheGet(key);
+  if (hit) return hit;
+  const items = await query();
+  catalogCacheSet(key, items);
+  return items;
+}
 
 router.get("/events", async (_req, res) => {
   const items = await ArtsEvent.find().sort({ date: 1 });
@@ -25,7 +38,9 @@ router.get("/events/:id", async (req, res) => {
 });
 
 router.get("/workshops", async (_req, res) => {
-  const items = await Workshop.find().sort({ date: 1 });
+  const items = await cachedList("workshops", () =>
+    Workshop.find(OPEN).select(WORKSHOP_FIELDS).sort({ date: 1 }).lean()
+  );
   res.json(items);
 });
 
@@ -36,7 +51,9 @@ router.get("/workshops/:id", async (req, res) => {
 });
 
 router.get("/proshows", async (_req, res) => {
-  const items = await Proshow.find().sort({ date: 1 });
+  const items = await cachedList("proshows", () =>
+    Proshow.find(OPEN).select(PROSHOW_FIELDS).sort({ date: 1 }).lean()
+  );
   res.json(items);
 });
 
@@ -73,7 +90,9 @@ router.get("/winners", async (_req, res) => {
 });
 
 router.get("/preevents", async (_req, res) => {
-  const items = await PreEvent.find({ isOpen: { $ne: false } }).sort({ date: 1 });
+  const items = await cachedList("preevents", () =>
+    PreEvent.find(OPEN).select(PREEVENT_FIELDS).sort({ date: 1 }).lean()
+  );
   res.json(items);
 });
 

@@ -13,10 +13,15 @@
   --font-malayalam: "Baloo Chettan 2", "Noto Sans Malayalam", serif;
 }
 
+html {
+  overflow-x: clip;
+}
+
 html,
 body,
 #root {
   min-height: 100%;
+  max-width: 100%;
   background: #000000;
   color: #f3ece0;
 }

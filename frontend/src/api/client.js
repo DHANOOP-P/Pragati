@@ -41,7 +41,28 @@ api.interceptors.response.use(
   }
 );
 
+const catalogInflight = new Map();
+
+export function getCatalog(path) {
+  const key = String(path || "");
+  const existing = catalogInflight.get(key);
+  if (existing) return existing;
+
+  const req = api
+    .get(key)
+    .finally(() => catalogInflight.delete(key));
+
+  catalogInflight.set(key, req);
+  return req;
+}
+
+export function prefetchCatalogs() {
+  getCatalog("/proshows").catch(() => {});
+  getCatalog("/preevents").catch(() => {});
+}
+
 export function wakeApi() {
+  prefetchCatalogs();
   return api.get("/health").catch(() => {});
 }
 

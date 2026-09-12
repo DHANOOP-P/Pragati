@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import api, { wakeApi } from "../api/client";
+import { getCatalog, wakeApi } from "../api/client";
 import Loader from "../components/ui/Loader";
 import Hero from "../components/hero/Hero";
 import Idea from "../components/sections/Idea";
@@ -10,15 +10,14 @@ import PreEvents from "../components/sections/PreEvents";
 import CurrentBand from "../components/sections/CurrentBand";
 import Faq from "../components/sections/Faq";
 import Finale from "../components/sections/Finale";
+import { FEATURED_PREEVENTS, FEATURED_PROSHOWS, mergePreevents, mergeProshows } from "../data/featuredCatalog";
 
 const list = (res) => (Array.isArray(res?.data) ? res.data : []);
 
 const catalog = {
   events: [],
-  proshows: [],
-  preevents: [],
-  proshowsReady: false,
-  preeventsReady: false,
+  proshows: FEATURED_PROSHOWS,
+  preevents: FEATURED_PREEVENTS,
 };
 
 const Home = () => {
@@ -26,12 +25,9 @@ const Home = () => {
   const [events, setEvents] = useState(catalog.events);
   const [proshows, setProshows] = useState(catalog.proshows);
   const [preevents, setPreevents] = useState(catalog.preevents);
-  const [proshowsReady, setProshowsReady] = useState(catalog.proshowsReady);
-  const [preeventsReady, setPreeventsReady] = useState(catalog.preeventsReady);
 
   const load = useCallback(() => {
-    api
-      .get("/events")
+    getCatalog("/events")
       .then((res) => {
         const items = list(res);
         catalog.events = items;
@@ -39,31 +35,21 @@ const Home = () => {
       })
       .catch((err) => console.error(err));
 
-    api
-      .get("/proshows")
+    getCatalog("/proshows")
       .then((res) => {
-        const items = list(res);
+        const items = mergeProshows(list(res));
         catalog.proshows = items;
         setProshows(items);
       })
-      .catch((err) => console.error(err))
-      .finally(() => {
-        catalog.proshowsReady = true;
-        setProshowsReady(true);
-      });
+      .catch((err) => console.error(err));
 
-    api
-      .get("/preevents")
+    getCatalog("/preevents")
       .then((res) => {
-        const items = list(res);
+        const items = mergePreevents(list(res));
         catalog.preevents = items;
         setPreevents(items);
       })
-      .catch((err) => console.error(err))
-      .finally(() => {
-        catalog.preeventsReady = true;
-        setPreeventsReady(true);
-      });
+      .catch((err) => console.error(err));
   }, []);
 
   useEffect(() => {
@@ -92,12 +78,11 @@ const Home = () => {
         title="Night court"
         kicker="Proshow · paid"
         items={proshows}
-        loading={!proshowsReady}
         pathBase="/proshows"
         badge={(item) => item.artist || "Live"}
         toAll="/proshows"
       />
-      <PreEvents items={preevents} loading={!preeventsReady} />
+      <PreEvents items={preevents} />
       <CurrentBand />
       <Faq />
       <Finale />

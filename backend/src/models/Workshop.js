@@ -16,4 +16,6 @@ const workshopSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+workshopSchema.index({ isOpen: 1, date: 1 });
+
 export default mongoose.model("Workshop", workshopSchema);
