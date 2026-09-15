@@ -20,8 +20,11 @@ const catalog = {
   preevents: FEATURED_PREEVENTS,
 };
 
+/** Survives SPA back-navigation; resets on hard refresh. */
+let homeBootSeen = false;
+
 const Home = () => {
-  const [booting, setBooting] = useState(true);
+  const [booting, setBooting] = useState(() => !homeBootSeen);
   const [events, setEvents] = useState(catalog.events);
   const [proshows, setProshows] = useState(catalog.proshows);
   const [preevents, setPreevents] = useState(catalog.preevents);
@@ -58,7 +61,14 @@ const Home = () => {
   }, [load]);
 
   if (booting) {
-    return <Loader onDone={() => setBooting(false)} />;
+    return (
+      <Loader
+        onDone={() => {
+          homeBootSeen = true;
+          setBooting(false);
+        }}
+      />
+    );
   }
 
   return (
