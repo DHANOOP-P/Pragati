@@ -7,6 +7,7 @@ import { downloadAuth } from "../utils/download";
 import { mediaUrl } from "../utils/media";
 import { isCollegeEmail } from "../utils/collegeEmail";
 import { isServiceOpen } from "../utils/serviceGates";
+import { FEATURED_PROSHOWS } from "../data/featuredCatalog";
 import ErrorState from "../components/ui/ErrorState";
 import ArtsRegisterForm from "../components/events/ArtsRegisterForm";
 
@@ -27,7 +28,20 @@ const ItemDetail = ({ type }) => {
   const paid = type !== "arts";
 
   useEffect(() => {
-    api.get(endpoint).then((res) => setItem(res.data)).catch((err) => setError(err.message));
+    api
+      .get(endpoint)
+      .then((res) => {
+        const next = res.data;
+        if (type !== "proshow" || !next) {
+          setItem(next);
+          return;
+        }
+        const featured = FEATURED_PROSHOWS.find(
+          (card) => String(card.artist || "").toLowerCase() === String(next.artist || "").toLowerCase()
+        );
+        setItem({ ...next, tag: next.tag || featured?.tag });
+      })
+      .catch((err) => setError(err.message));
   }, [endpoint]);
 
   useEffect(() => {
@@ -162,6 +176,11 @@ const ItemDetail = ({ type }) => {
             {item.artist ? ` · ${item.artist}` : ""}
           </p>
           <h1 className="mt-3 font-display text-6xl md:text-8xl">{item.title}</h1>
+          {item.tag ? (
+            <p className="mt-4 inline-block border border-ember/60 bg-void/70 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-paper">
+              {item.tag}
+            </p>
+          ) : null}
           {item.artist && type === "proshow" ? (
             <p className="mt-3 text-sm uppercase tracking-[0.28em] text-ember">{item.artist}</p>
           ) : null}

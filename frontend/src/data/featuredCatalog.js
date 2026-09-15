@@ -25,6 +25,7 @@ export const FEATURED_PROSHOWS = [
     artist: "Ricky Brown",
     price: 199,
     image: "/assets/proshows/ricky-brown.jpg",
+    tag: "Event cancelled due to rain",
   },
 ];
 
@@ -87,7 +88,7 @@ export function mergeProshows(live) {
       list.find((item) => item.title === card.title && !used.has(String(item._id)));
     if (!hit) return card;
     used.add(String(hit._id));
-    return { ...card, ...hit, image: hit.image || card.image };
+    return { ...card, ...hit, image: hit.image || card.image, tag: card.tag || hit.tag };
   });
   const extras = list.filter((item) => item?._id && !used.has(String(item._id)));
   return extras.length ? [...merged, ...extras] : merged;

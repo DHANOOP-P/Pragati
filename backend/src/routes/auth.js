@@ -5,6 +5,14 @@ import { protect, signToken } from "../middleware/auth.js";
 
 const router = Router();
 
+function publicDbError(err) {
+  const raw = String(err?.message || "");
+  if (/SSL|tlsv1|ENOTFOUND|ECONNRESET|server selection|timed out|Mongo/i.test(raw)) {
+    return "Could not reach the database. Allow 0.0.0.0/0 in Atlas Network Access, then try again.";
+  }
+  return "Could not sign you in. Try again.";
+}
+
 function publicUser(user) {
   return {
     id: user._id,
@@ -43,7 +51,8 @@ router.post("/signup", async (req, res) => {
 
     res.status(201).json({ token: signToken(user), user: publicUser(user) });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    res.status(503).json({ message: publicDbError(err) });
   }
 });
 
@@ -58,7 +67,8 @@ router.post("/login", async (req, res) => {
 
     res.json({ token: signToken(user), user: publicUser(user) });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    res.status(503).json({ message: publicDbError(err) });
   }
 });
 

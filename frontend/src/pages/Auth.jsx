@@ -30,7 +30,12 @@ const Auth = () => {
       navigate(safeFrom(location.state?.from));
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      const raw = String(err.message || "");
+      setError(
+        /SSL|tlsv1|openssl/i.test(raw)
+          ? "Could not reach the database. Wait a few seconds and try again."
+          : raw || "Could not sign you in."
+      );
     }
   };
 

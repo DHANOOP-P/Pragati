@@ -27,7 +27,11 @@ export async function connectDb() {
   const uri = resolveMongoUri();
 
   try {
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 20000 });
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 20000,
+      family: 4,
+      autoSelectFamily: false,
+    });
     console.log("MongoDB connected:", redactMongoUri(uri));
     return { memory: false, uri };
   } catch (err) {

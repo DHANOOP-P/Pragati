@@ -246,6 +246,15 @@ const EventRiver = ({
                     className="event-river-shell"
                   >
                     {item.image ? <img src={mediaUrl(item.image, 900)} alt="" loading="lazy" /> : null}
+                    {item.tag ? (
+                      <div className="event-river-banner" aria-hidden>
+                        <p className="event-river-banner-track">
+                          {Array.from({ length: 16 }, (_, n) => (
+                            <span key={n}>{item.tag}</span>
+                          ))}
+                        </p>
+                      </div>
+                    ) : null}
                     <div className="event-river-copy">
                       <p className="event-river-kicker">
                         {String(i + 1).padStart(2, "0")} ·{" "}

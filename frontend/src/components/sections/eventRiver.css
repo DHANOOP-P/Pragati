@@ -173,6 +173,47 @@
   background: linear-gradient(180deg, transparent 28%, rgba(5, 3, 8, 0.92) 100%);
 }
 
+.event-river-banner {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 50%;
+  z-index: 3;
+  overflow: hidden;
+  height: 2.35rem;
+  pointer-events: none;
+  background: #c01212;
+  transform: translateY(-50%) rotate(-5deg);
+  transform-origin: 50% 50%;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.event-river-banner-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  height: 100%;
+  gap: 2.1rem;
+  margin: 0;
+  animation: event-river-banner-move 14s linear infinite;
+}
+
+.event-river-banner-track span {
+  flex: none;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@keyframes event-river-banner-move {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
 .event-river-copy {
   position: relative;
   z-index: 2;
@@ -261,7 +302,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .event-river-ticker-track {
+  .event-river-ticker-track,
+  .event-river-banner-track {
     animation: none;
   }
 
