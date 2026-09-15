@@ -22,37 +22,34 @@ const catalog = {
 
 const Home = () => {
   const [booting, setBooting] = useState(true);
-  const [catalogReady, setCatalogReady] = useState(false);
   const [events, setEvents] = useState(catalog.events);
   const [proshows, setProshows] = useState(catalog.proshows);
   const [preevents, setPreevents] = useState(catalog.preevents);
 
-  const load = useCallback(async () => {
-    setCatalogReady(false);
-    await Promise.allSettled([
-      getCatalog("/events")
-        .then((res) => {
-          const items = list(res);
-          catalog.events = items;
-          setEvents(items);
-        })
-        .catch((err) => console.error(err)),
-      getCatalog("/proshows")
-        .then((res) => {
-          const items = mergeProshows(list(res));
-          catalog.proshows = items;
-          setProshows(items);
-        })
-        .catch((err) => console.error(err)),
-      getCatalog("/preevents")
-        .then((res) => {
-          const items = mergePreevents(list(res));
-          catalog.preevents = items;
-          setPreevents(items);
-        })
-        .catch((err) => console.error(err)),
-    ]);
-    setCatalogReady(true);
+  const load = useCallback(() => {
+    getCatalog("/events")
+      .then((res) => {
+        const items = list(res);
+        catalog.events = items;
+        setEvents(items);
+      })
+      .catch((err) => console.error(err));
+
+    getCatalog("/proshows")
+      .then((res) => {
+        const items = mergeProshows(list(res));
+        catalog.proshows = items;
+        setProshows(items);
+      })
+      .catch((err) => console.error(err));
+
+    getCatalog("/preevents")
+      .then((res) => {
+        const items = mergePreevents(list(res));
+        catalog.preevents = items;
+        setPreevents(items);
+      })
+      .catch((err) => console.error(err));
   }, []);
 
   useEffect(() => {
@@ -61,7 +58,7 @@ const Home = () => {
   }, [load]);
 
   if (booting) {
-    return <Loader ready={catalogReady} onDone={() => setBooting(false)} />;
+    return <Loader onDone={() => setBooting(false)} />;
   }
 
   return (

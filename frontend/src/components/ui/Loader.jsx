@@ -5,11 +5,11 @@ import "./loader.css";
 const WORD = "PRAGATI";
 const ROWS = 11;
 const REPEAT = 8;
-const MIN_MS = 5000;
+const DURATION_MS = 3000;
 const strip = Array.from({ length: REPEAT }, () => WORD);
 const track = [...strip, ...strip];
 
-const Loader = ({ ready = false, onDone }) => {
+const Loader = ({ onDone }) => {
   const reduce = useReducedMotion();
   const startRef = useRef(Date.now());
   const doneRef = useRef(false);
@@ -31,9 +31,7 @@ const Loader = ({ ready = false, onDone }) => {
     doneRef.current = false;
     setPct(0);
     setExiting(false);
-  }, []);
 
-  useEffect(() => {
     let raf = 0;
 
     const finish = () => {
@@ -46,10 +44,9 @@ const Loader = ({ ready = false, onDone }) => {
 
     const tick = () => {
       const elapsed = Date.now() - startRef.current;
-      const timePct = Math.min(99, Math.floor((elapsed / MIN_MS) * 99));
-      setPct((cur) => Math.max(cur, timePct));
+      setPct(Math.min(99, Math.floor((elapsed / DURATION_MS) * 99)));
 
-      if (ready && elapsed >= MIN_MS) {
+      if (elapsed >= DURATION_MS) {
         finish();
         return;
       }
@@ -59,7 +56,7 @@ const Loader = ({ ready = false, onDone }) => {
 
     raf = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(raf);
-  }, [ready, onDone, reduce]);
+  }, [onDone, reduce]);
 
   return (
     <div className={`pragati-loader${exiting ? " is-exit" : ""}`} aria-busy="true" aria-label="Loading Pragati">
