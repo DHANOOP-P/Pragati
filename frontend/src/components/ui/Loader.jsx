@@ -1,8 +1,20 @@
-import { useEffect, useLayoutEffect, useState } from "react";
-import BrandMark from "./BrandMark";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
+import "./loader.css";
 
-const Loader = ({ onDone }) => {
+const WORD = "PRAGATI";
+const ROWS = 11;
+const REPEAT = 8;
+const MIN_MS = 5000;
+const strip = Array.from({ length: REPEAT }, () => WORD);
+const track = [...strip, ...strip];
+
+const Loader = ({ ready = false, onDone }) => {
+  const reduce = useReducedMotion();
+  const startRef = useRef(Date.now());
+  const doneRef = useRef(false);
   const [pct, setPct] = useState(0);
+  const [exiting, setExiting] = useState(false);
 
   useLayoutEffect(() => {
     document.body.classList.add("is-booting");
@@ -15,26 +27,73 @@ const Loader = ({ onDone }) => {
   }, []);
 
   useEffect(() => {
-    let n = 0;
-    const id = setInterval(() => {
-      n += Math.random() * 18 + 8;
-      if (n >= 100) {
-        n = 100;
-        clearInterval(id);
-        setTimeout(onDone, 220);
+    startRef.current = Date.now();
+    doneRef.current = false;
+    setPct(0);
+    setExiting(false);
+  }, []);
+
+  useEffect(() => {
+    let raf = 0;
+
+    const finish = () => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      setPct(100);
+      setExiting(true);
+      window.setTimeout(onDone, reduce ? 180 : 380);
+    };
+
+    const tick = () => {
+      const elapsed = Date.now() - startRef.current;
+      const timePct = Math.min(99, Math.floor((elapsed / MIN_MS) * 99));
+      setPct((cur) => Math.max(cur, timePct));
+
+      if (ready && elapsed >= MIN_MS) {
+        finish();
+        return;
       }
-      setPct(Math.min(100, Math.floor(n)));
-    }, 70);
-    return () => clearInterval(id);
-  }, [onDone]);
+
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, [ready, onDone, reduce]);
 
   return (
-    <div className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-void">
-      <BrandMark className="h-28 w-auto md:h-36" />
-      <p className="mt-6 font-serif text-sm tracking-[0.6em] text-gold">GECW</p>
-      <h1 className="mt-4 font-display text-[18vw] leading-none tracking-tight md:text-[9rem]">PRAGATI</h1>
-      <p className="mt-6 font-serif italic text-mute">entering the other side of art</p>
-      <p className="mt-10 font-display text-4xl tabular-nums text-gold">{String(pct).padStart(2, "0")}</p>
+    <div className={`pragati-loader${exiting ? " is-exit" : ""}`} aria-busy="true" aria-label="Loading Pragati">
+      <div className="loader-field" aria-hidden>
+        {Array.from({ length: ROWS }, (_, row) => (
+          <div key={row} className="loader-row">
+            <p className="loader-track">
+              {track.map((word, i) => (
+                <span key={`${row}-${i}`}>{word}</span>
+              ))}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="loader-header" aria-hidden />
+      <div className="loader-footer" aria-hidden />
+      <p className="loader-meta is-file">GECW · FILE_08</p>
+      <div className="loader-countdown" aria-live="polite">
+        <p className="loader-countdown-label">Loading</p>
+        <div className="loader-countdown-digits">
+          {String(pct)
+            .padStart(2, "0")
+            .split("")
+            .map((digit, i) => (
+              <span key={`${pct}-${i}`} className="loader-countdown-digit" data-digit={digit}>
+                {digit}
+              </span>
+            ))}
+          <span className="loader-countdown-suffix">%</span>
+        </div>
+        <div className="loader-countdown-rail" aria-hidden>
+          <i style={{ width: `${pct}%` }} />
+        </div>
+      </div>
     </div>
   );
 };

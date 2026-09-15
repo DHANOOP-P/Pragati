@@ -10,7 +10,7 @@ import { LayoutChromeProvider } from "./LayoutChrome";
 const Layout = () => {
   useLenis();
   const location = useLocation();
-  const [booting, setBooting] = useState(location.pathname === "/");
+  const [booting, setBooting] = useState(false);
   const [hideFooter, setHideFooter] = useState(false);
   const setFooterHidden = useCallback((next) => setHideFooter(Boolean(next)), []);
 
@@ -35,7 +35,7 @@ const Layout = () => {
         <div className="grain" aria-hidden />
         <div className="vignette" aria-hidden />
         <Cursor />
-        <Navbar />
+        {!booting && <Navbar />}
         <main className="relative z-10">
           <Outlet />
         </main>
