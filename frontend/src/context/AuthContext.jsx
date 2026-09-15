@@ -39,6 +39,15 @@ export function AuthProvider({ children }) {
         setUser(data.user);
         return data.user;
       },
+      async forgotPassword(email) {
+        const { data } = await api.post("/auth/forgot-password", { email });
+        return data;
+      },
+      async updateProfile(payload) {
+        const { data } = await api.patch("/auth/me", payload);
+        setUser(data.user);
+        return data;
+      },
       logout() {
         localStorage.removeItem("pragati_token");
         setUser(null);

@@ -1,6 +1,6 @@
 .cert-page {
   position: relative;
-  z-index: 20;
+  z-index: 2;
   box-sizing: border-box;
   width: 100%;
   max-width: min(42rem, 100%);

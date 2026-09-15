@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import FormBackdrop from "../components/forms/FormBackdrop";
 import { downloadAuth } from "../utils/download";
 
 const Dashboard = () => {
@@ -16,33 +17,48 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="relative z-20 bg-void px-6 pb-24 pt-28 md:px-12">
+    <FormBackdrop className="px-6 pb-24 pt-28 md:px-12">
       <p className="text-[11px] uppercase tracking-[0.35em] text-ember">Your file</p>
       <h1 className="mt-2 font-display text-6xl">{user?.name}</h1>
       <p className="mt-2 text-mute">{user?.email}</p>
-      <button
-        type="button"
-        className="mt-5 text-[11px] uppercase tracking-[0.28em] text-ember"
-        onClick={() => {
-          logout();
-          navigate("/");
-        }}
-      >
-        Logout
-      </button>
+      <div className="mt-5 flex flex-wrap gap-4">
+        <Link
+          to="/profile"
+          className="bg-ember px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-paper"
+        >
+          Edit profile
+        </Link>
+        <button
+          type="button"
+          className="px-6 py-3 text-[11px] uppercase tracking-[0.28em] text-ember"
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       <h2 className="mt-14 font-display text-3xl text-gold">Tickets</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {regs.map((r) => (
           <div key={r._id} className="border border-paper/10 p-5">
             <p className="text-[10px] uppercase tracking-[0.28em] text-ember">{r.itemType}</p>
             <h3 className="font-display text-2xl">{r.itemTitle}</h3>
-            <p className="mt-1 text-sm text-mute">{r.ticketCode} · ₹{r.amount}</p>
+            <p className="mt-1 text-sm text-mute">
+              {r.ticketCode} · ₹{r.amount}
+            </p>
             <div className="mt-4 flex gap-4 text-[11px] uppercase tracking-[0.2em]">
               <button type="button" onClick={() => downloadAuth(`/api/registrations/${r._id}/ticket`, `${r.ticketCode}.pdf`)}>
                 Ticket
               </button>
               {r.invoicePath && (
-                <button type="button" className="text-gold" onClick={() => downloadAuth(`/api/registrations/${r._id}/invoice`, `invoice-${r.ticketCode}.pdf`)}>
+                <button
+                  type="button"
+                  className="text-gold"
+                  onClick={() => downloadAuth(`/api/registrations/${r._id}/invoice`, `invoice-${r.ticketCode}.pdf`)}
+                >
                   Invoice
                 </button>
               )}
@@ -51,7 +67,11 @@ const Dashboard = () => {
         ))}
         {!regs.length && (
           <p className="text-mute">
-            Empty. Browse <Link to="/events" className="text-gold">arts</Link>.
+            Empty. Browse{" "}
+            <Link to="/events" className="text-gold">
+              arts
+            </Link>
+            .
           </p>
         )}
       </div>
@@ -71,7 +91,7 @@ const Dashboard = () => {
         ))}
         {!certs.length && <p className="text-mute">No certificate matched yet.</p>}
       </div>
-    </div>
+    </FormBackdrop>
   );
 };
 

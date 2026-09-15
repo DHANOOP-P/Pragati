@@ -3,7 +3,7 @@ import api from "../../api/client";
 import { DEPARTMENTS } from "../../data/studentMeta";
 import { downloadAuth } from "../../utils/download";
 
-const selectClass = "border border-paper/15 bg-void px-3 py-2 text-sm";
+const selectClass = "border border-paper/15 bg-void px-3 py-2 text-sm text-paper";
 
 const AdminEventRegistrations = () => {
   const [kind, setKind] = useState("individual");

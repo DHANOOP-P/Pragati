@@ -164,6 +164,69 @@ router.get("/stats", async (_req, res) => {
   });
 });
 
+router.get("/students", async (req, res) => {
+  const q = String(req.query.q || "").trim();
+  const semester = String(req.query.semester || "").trim();
+  const studentClass = String(req.query.studentClass || req.query.class || "").trim();
+  const department = String(req.query.department || "").trim();
+  const filter = { role: "student" };
+  if (q) {
+    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ name: rx }, { email: rx }, { phone: rx }, { college: rx }, { department: rx }, { houseName: rx }];
+  }
+  if (semester) filter.semester = new RegExp(`^${semester.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  if (studentClass) filter.studentClass = String(studentClass);
+  if (department) filter.department = new RegExp(`^${department.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  const students = await User.find(filter)
+    .select("name email phone college studentClass semester houseName department createdAt")
+    .sort({ createdAt: -1 });
+  res.json(students);
+});
+
+router.get("/students/export", async (req, res) => {
+  const q = String(req.query.q || "").trim();
+  const semester = String(req.query.semester || "").trim();
+  const studentClass = String(req.query.studentClass || req.query.class || "").trim();
+  const department = String(req.query.department || "").trim();
+  const filter = { role: "student" };
+  if (q) {
+    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ name: rx }, { email: rx }, { phone: rx }, { college: rx }, { department: rx }, { houseName: rx }];
+  }
+  if (semester) filter.semester = new RegExp(`^${semester.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  if (studentClass) filter.studentClass = String(studentClass);
+  if (department) filter.department = new RegExp(`^${department.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  const students = await User.find(filter)
+    .select("name email phone college studentClass semester houseName department createdAt")
+    .sort({ createdAt: -1 });
+  const header = ["Name", "Email", "Phone", "College", "Class", "Semester", "House", "Department", "Signed up"];
+  const rows = students.map((s) =>
+    [
+      s.name,
+      s.email,
+      s.phone,
+      s.college,
+      s.studentClass,
+      s.semester,
+      s.houseName,
+      s.department,
+      s.createdAt ? new Date(s.createdAt).toISOString() : "",
+    ]
+      .map((value) => `"${String(value || "").replace(/"/g, '""')}"`)
+      .join(",")
+  );
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="pragati-students.csv"');
+  res.send([header.join(","), ...rows].join("\n"));
+});
+
+router.delete("/students/:id", async (req, res) => {
+  const student = await User.findOne({ _id: req.params.id, role: "student" });
+  if (!student) return res.status(404).json({ message: "Student not found" });
+  await User.deleteOne({ _id: student._id });
+  res.json({ ok: true });
+});
+
 router.get("/registrations", async (req, res) => {
   res.json(await listRegistrations(req.query));
 });

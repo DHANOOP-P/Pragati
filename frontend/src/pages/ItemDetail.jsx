@@ -10,6 +10,7 @@ import { isServiceOpen } from "../utils/serviceGates";
 import { FEATURED_PROSHOWS } from "../data/featuredCatalog";
 import ErrorState from "../components/ui/ErrorState";
 import ArtsRegisterForm from "../components/events/ArtsRegisterForm";
+import FormBackdrop from "../components/forms/FormBackdrop";
 
 const ItemDetail = ({ type }) => {
   const { id } = useParams();
@@ -156,7 +157,7 @@ const ItemDetail = ({ type }) => {
   const blocked = busy || !item.isOpen || remaining <= 0 || taken || limitHit;
 
   return (
-    <div className="relative z-20 px-6 pb-24 pt-28 md:px-12">
+    <FormBackdrop className="px-6 pb-24 pt-28 md:px-12">
       <Link to={type === "arts" ? "/events" : type === "workshop" ? "/workshops" : "/proshows"} className="text-[11px] uppercase tracking-[0.28em] text-mute hover:text-gold">
         Back
       </Link>
@@ -285,7 +286,7 @@ const ItemDetail = ({ type }) => {
           {error && <p className="mt-4 text-ember">{error}</p>}
         </div>
       </div>
-    </div>
+    </FormBackdrop>
   );
 };
 

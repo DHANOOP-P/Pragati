@@ -12,6 +12,7 @@ const links = [
   { to: "/admin/points", label: "Points" },
   { to: "/admin/winners", label: "Winners" },
   { to: "/admin/certificates", label: "Certificates" },
+  { to: "/admin/students", label: "Students" },
   { to: "/admin/event-registrations", label: "Event registrations" },
   { to: "/admin/registrations", label: "Paid registrations" },
 ];

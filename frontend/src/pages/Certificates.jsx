@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import FormBackdrop from "../components/forms/FormBackdrop";
 import { canSeeCertificates } from "../utils/collegeEmail";
 import { CERTIFICATE_DRIVE_URL } from "../data/certificateDrive";
 import "./certificates.css";
@@ -17,6 +18,7 @@ const Certificates = () => {
   }
 
   return (
+    <FormBackdrop>
     <article className="cert-page">
       <p className="cert-kicker">Desk</p>
       <h1>Certificates</h1>
@@ -50,6 +52,7 @@ const Certificates = () => {
         )}
       </div>
     </article>
+    </FormBackdrop>
   );
 };
 

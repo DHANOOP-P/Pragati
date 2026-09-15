@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Unavailable from "./pages/Unavailable";
 import Certificates from "./pages/Certificates";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminEvents from "./pages/admin/AdminEvents";
@@ -28,6 +29,7 @@ import AdminPoints from "./pages/admin/AdminPoints";
 import AdminCertificates from "./pages/admin/AdminCertificates";
 import AdminRegistrations from "./pages/admin/AdminRegistrations";
 import AdminEventRegistrations from "./pages/admin/AdminEventRegistrations";
+import AdminStudents from "./pages/admin/AdminStudents";
 
 const App = () => (
   <AuthProvider>
@@ -50,6 +52,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute admin><AdminLayout /></ProtectedRoute>}>
             <Route index element={<AdminOverview />} />
             <Route path="events" element={<AdminEvents />} />
@@ -60,6 +63,7 @@ const App = () => (
             <Route path="winners" element={<AdminWinners />} />
             <Route path="preevents" element={<AdminPreEvents />} />
             <Route path="certificates" element={<AdminCertificates />} />
+            <Route path="students" element={<AdminStudents />} />
             <Route path="event-registrations" element={<AdminEventRegistrations />} />
             <Route path="registrations" element={<AdminRegistrations />} />
           </Route>

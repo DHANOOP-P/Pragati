@@ -51,7 +51,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link to={user.role === "admin" ? "/admin" : "/dashboard"} className="text-[11px] uppercase tracking-[0.28em] text-gold">
-                  {user.role === "admin" ? "Desk" : "File"}
+                  {user.role === "admin" ? "Desk" : "Profile"}
                 </Link>
                 <button type="button" onClick={signOut} className="text-[11px] uppercase tracking-[0.28em] text-paper/80 hover:text-gold">
                   Logout
@@ -99,7 +99,7 @@ const Navbar = () => {
                   onClick={() => setOpen(false)}
                   className="font-display text-5xl leading-tight text-gold"
                 >
-                  {user.role === "admin" ? "Desk" : "profile"}
+                  {user.role === "admin" ? "Desk" : "Profile"}
                 </NavLink>
                 <button type="button" className="mt-8 text-left text-mute" onClick={signOut}>
                   Logout

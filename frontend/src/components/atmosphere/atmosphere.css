@@ -18,7 +18,7 @@
   height: min(46vw, 460px);
   left: -16%;
   top: 8%;
-  background: radial-gradient(ellipse, rgba(215, 181, 109, 0.28), transparent 70%);
+  background: radial-gradient(ellipse, rgba(215, 181, 109, 0.34), transparent 70%);
   animation: atmosphere-drift 30s ease-in-out infinite alternate;
 }
 
@@ -27,8 +27,17 @@
   height: min(50vw, 480px);
   right: -14%;
   bottom: 6%;
-  background: radial-gradient(circle, rgba(196, 92, 45, 0.22), transparent 70%);
+  background: radial-gradient(circle, rgba(196, 92, 45, 0.28), transparent 70%);
   animation: atmosphere-drift 36s ease-in-out infinite alternate-reverse;
+}
+
+.atmosphere-patch-c {
+  width: min(40vw, 380px);
+  height: min(40vw, 380px);
+  left: 42%;
+  top: 48%;
+  background: radial-gradient(circle, rgba(122, 62, 93, 0.16), transparent 70%);
+  animation: atmosphere-drift 42s ease-in-out infinite alternate;
 }
 
 .atmosphere-orbits {
@@ -50,11 +59,11 @@
   animation: atmosphere-twinkle 8s ease-in-out infinite;
 }
 
-.atmosphere-dot:nth-child(4) { animation-delay: -2s; }
-.atmosphere-dot:nth-child(5) { animation-delay: -4s; }
-.atmosphere-dot:nth-child(6) { animation-delay: -1s; width: 2px; height: 2px; }
-.atmosphere-dot:nth-child(7) { animation-delay: -5s; }
-.atmosphere-dot:nth-child(8) { animation-delay: -3s; width: 2px; height: 2px; }
+.atmosphere-dot:nth-child(5) { animation-delay: -2s; }
+.atmosphere-dot:nth-child(6) { animation-delay: -4s; }
+.atmosphere-dot:nth-child(7) { animation-delay: -1s; width: 2px; height: 2px; }
+.atmosphere-dot:nth-child(8) { animation-delay: -5s; }
+.atmosphere-dot:nth-child(9) { animation-delay: -3s; width: 2px; height: 2px; }
 
 @keyframes atmosphere-drift {
   from { transform: translate3d(0, 0, 0); }

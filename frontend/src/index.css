@@ -15,6 +15,7 @@
 
 html {
   overflow-x: clip;
+  color-scheme: dark;
 }
 
 html,
@@ -29,6 +30,26 @@ body,
 body {
   font-family: var(--font-display);
   cursor: auto;
+}
+
+/* Native select menus: dark panel, light labels (Windows/Chrome especially) */
+select {
+  color: #f3ece0;
+  background-color: #000000;
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: #100e14;
+  color: #f3ece0;
+}
+
+select option:checked,
+select option:hover,
+select option:focus {
+  background-color: #2a241c;
+  color: #f3ece0;
 }
 
 body.has-cursor,

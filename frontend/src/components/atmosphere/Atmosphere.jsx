@@ -4,6 +4,7 @@ const Atmosphere = () => (
   <div className="atmosphere" aria-hidden>
     <span className="atmosphere-patch atmosphere-patch-a" />
     <span className="atmosphere-patch atmosphere-patch-b" />
+    <span className="atmosphere-patch atmosphere-patch-c" />
 
     <svg className="atmosphere-orbits" viewBox="0 0 1000 1000" fill="none">
       <circle cx="500" cy="500" r="220" stroke="rgba(243,236,224,0.16)" strokeWidth="0.9" strokeDasharray="220 1160" />

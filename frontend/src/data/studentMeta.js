@@ -1,5 +1,7 @@
 export const HOUSE_NAMES = ["Themis", "Maat", "Justitia", "Rashnu", "Lugh", "Marduk"];
 export const DEPARTMENTS = ["CSE", "ECE", "EEE", "ME", "CE"];
+export const SEMESTERS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
+export const CLASS_YEARS = ["1", "2", "3", "4"];
 
 const DEPT_FROM_SUFFIX = {
   cs: "CSE",

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, default: "" },
     college: { type: String, default: "" },
     studentClass: { type: String, default: "" },
+    semester: { type: String, default: "" },
     houseName: { type: String, default: "" },
     department: { type: String, default: "" },
     role: { type: String, enum: ["student", "admin"], default: "student" },

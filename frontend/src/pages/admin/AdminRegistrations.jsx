@@ -23,7 +23,7 @@ const AdminRegistrations = () => {
           <h1 className="mt-2 font-display text-4xl">Paid registrations</h1>
         </div>
         <div className="flex gap-2">
-          <select value={type} onChange={(e) => setType(e.target.value)} className="border border-paper/15 bg-void px-3 py-2">
+          <select value={type} onChange={(e) => setType(e.target.value)} className="border border-paper/15 bg-void px-3 py-2 text-paper">
             <option value="">All paid</option>
             <option value="workshop">Workshops</option>
             <option value="proshow">Proshows</option>

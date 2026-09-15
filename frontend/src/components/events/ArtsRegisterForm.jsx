@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { DEPARTMENTS, HOUSE_NAMES, parseDepartmentFromEmail } from "../../data/studentMeta";
 
-const inputClass = "mt-1 w-full border border-paper/15 bg-transparent px-3 py-2 text-paper";
+const inputClass = "mt-1 w-full border border-paper/15 bg-void px-3 py-2 text-paper";
 
 const emptyMember = () => ({ name: "", studentClass: "", department: "" });
 
@@ -48,7 +48,7 @@ const ArtsRegisterForm = ({ item, user, busy, onCancel, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submit} className="mt-10 border border-paper/15 p-6">
+    <form onSubmit={submit} className="mt-10 border border-paper/15 bg-ink/55 p-6 backdrop-blur-sm">
       <p className="text-[11px] uppercase tracking-[0.3em] text-ember">
         GECW only · {kind === "group" ? "Group" : "Individual"}
       </p>

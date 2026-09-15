@@ -79,7 +79,7 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
             {f.type === "checkbox" ? (
               <input type="checkbox" name={f.name} checked={Boolean(form[f.name])} onChange={onChange} className="ml-3" />
             ) : f.type === "select" ? (
-              <select name={f.name} value={form[f.name] ?? ""} onChange={onChange} className="mt-1 w-full border border-paper/15 bg-void px-3 py-2">
+              <select name={f.name} value={form[f.name] ?? ""} onChange={onChange} className="mt-1 w-full border border-paper/15 bg-void px-3 py-2 text-paper">
                 {(f.options || []).map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}
