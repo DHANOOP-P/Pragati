@@ -59,12 +59,12 @@ const AdminRegistrations = () => {
           onClick={() =>
             downloadAuth(
               `/api/admin/registrations/export?scope=paid${type ? `&itemType=${type}` : ""}`,
-              "pragati-paid-registrations.csv"
+              "pragati-paid-registrations.pdf"
             )
           }
           className="text-gold"
         >
-          Export
+          Export PDF
         </button>
       </div>
 

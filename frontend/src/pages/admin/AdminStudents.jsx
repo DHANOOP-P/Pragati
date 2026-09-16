@@ -83,10 +83,10 @@ const AdminStudents = () => {
         </div>
         <button
           type="button"
-          onClick={() => downloadAuth(exportHref, "pragati-students.csv")}
+          onClick={() => downloadAuth(exportHref, "pragati-students.pdf")}
           className="text-gold"
         >
-          Export all
+          Export PDF
         </button>
       </div>
 

@@ -74,8 +74,8 @@ const AdminEventRegistrations = () => {
             Arts sign-ups. Individual and group lists stay separate.
           </p>
         </div>
-        <button type="button" onClick={() => downloadAuth(exportHref, `pragati-event-${kind}.csv`)} className="text-gold">
-          Export
+        <button type="button" onClick={() => downloadAuth(exportHref, `pragati-event-${kind}.pdf`)} className="text-gold">
+          Export PDF
         </button>
       </div>
 

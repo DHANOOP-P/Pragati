@@ -14,7 +14,7 @@ import User from "../models/User.js";
 import { adminOnly, protect } from "../middleware/auth.js";
 import { uploadCertificates, uploadMedia, saveLocalImage, listLocalImages } from "../middleware/upload.js";
 import { normalizeName } from "../utils/ticket.js";
-import { publicFileUrl } from "../utils/pdf.js";
+import { publicFileUrl, sendTablePdf } from "../utils/pdf.js";
 import { isCloudinaryReady, uploadBuffer, listImages } from "../utils/cloudinary.js";
 import { getServiceGates, serializeGates } from "../utils/serviceGates.js";
 import { catalogCacheClear } from "../utils/catalogCache.js";
@@ -138,9 +138,11 @@ function registrationSort(query) {
   return { createdAt: -1 };
 }
 
-function csvCell(value) {
-  const text = String(value ?? "").replace(/"/g, '""');
-  return `"${text}"`;
+function fmtExportDate(value) {
+  if (!value) return "";
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString("en-IN");
 }
 
 async function listRegistrations(query) {
@@ -230,9 +232,11 @@ router.get("/students/export", async (req, res) => {
   const students = await User.find(filter)
     .select("name email phone college studentClass semester houseName department createdAt")
     .sort({ createdAt: -1 });
-  const header = ["Name", "Email", "Phone", "College", "Class", "Semester", "House", "Department", "Signed up"];
-  const rows = students.map((s) =>
-    [
+  sendTablePdf(res, {
+    title: "Students export",
+    filename: "pragati-students.pdf",
+    headers: ["Name", "Email", "Phone", "College", "Class", "Semester", "House", "Department", "Signed up"],
+    rows: students.map((s) => [
       s.name,
       s.email,
       s.phone,
@@ -241,14 +245,9 @@ router.get("/students/export", async (req, res) => {
       s.semester,
       s.houseName,
       s.department,
-      s.createdAt ? new Date(s.createdAt).toISOString() : "",
-    ]
-      .map((value) => `"${String(value || "").replace(/"/g, '""')}"`)
-      .join(",")
-  );
-  res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", 'attachment; filename="pragati-students.csv"');
-  res.send([header.join(","), ...rows].join("\n"));
+      fmtExportDate(s.createdAt),
+    ]),
+  });
 });
 
 router.delete("/students/:id", async (req, res) => {
@@ -271,45 +270,43 @@ router.delete("/registrations/:id", async (req, res) => {
 router.get("/registrations/export", async (req, res) => {
   const items = await listRegistrations(req.query);
   const arts = req.query.scope === "arts" || req.query.itemType === "arts";
-  const header = arts
-    ? "Kind,Event,Student / Leader,Class,House,Department,Phone,Email,Members,Ticket,Date"
-    : "Name,Email,Phone,College,Type,Title,Amount,Ticket,Status,Date";
-  const rows = items.map((r) =>
-    arts
-      ? [
-          r.participationType,
-          r.itemTitle,
-          r.studentName,
-          r.studentClass,
-          r.houseName,
-          r.department,
-          r.phone,
-          r.email,
-          (r.members || []).map((m) => `${m.name} (${m.studentClass}, ${m.department})`).join("; "),
-          r.ticketCode,
-          r.createdAt?.toISOString?.() || r.createdAt,
-        ]
-          .map(csvCell)
-          .join(",")
-      : [
-          r.user?.name || r.studentName,
-          r.user?.email || r.email,
-          r.user?.phone || r.phone,
-          r.user?.college,
-          r.itemType,
-          r.itemTitle,
-          r.amount,
-          r.ticketCode,
-          r.status,
-          r.createdAt?.toISOString?.() || r.createdAt,
-        ]
-          .map(csvCell)
-          .join(",")
-  );
-  const filename = arts ? "pragati-event-registrations.csv" : "pragati-paid-registrations.csv";
-  res.setHeader("Content-Type", "text/csv");
-  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
-  res.send([header, ...rows].join("\n"));
+  if (arts) {
+    return sendTablePdf(res, {
+      title: "Event registrations export",
+      filename: "pragati-event-registrations.pdf",
+      headers: ["Kind", "Event", "Student / Leader", "Class", "House", "Department", "Phone", "Email", "Members", "Ticket", "Date"],
+      rows: items.map((r) => [
+        r.participationType,
+        r.itemTitle,
+        r.studentName,
+        r.studentClass,
+        r.houseName,
+        r.department,
+        r.phone,
+        r.email,
+        (r.members || []).map((m) => `${m.name} (${m.studentClass}, ${m.department})`).join("; "),
+        r.ticketCode,
+        fmtExportDate(r.createdAt),
+      ]),
+    });
+  }
+  return sendTablePdf(res, {
+    title: "Paid registrations export",
+    filename: "pragati-paid-registrations.pdf",
+    headers: ["Name", "Email", "Phone", "College", "Type", "Title", "Amount", "Ticket", "Status", "Date"],
+    rows: items.map((r) => [
+      r.user?.name || r.studentName,
+      r.user?.email || r.email,
+      r.user?.phone || r.phone,
+      r.user?.college || r.college,
+      r.itemType,
+      r.itemTitle,
+      r.amount,
+      r.ticketCode,
+      r.status,
+      fmtExportDate(r.createdAt),
+    ]),
+  });
 });
 
 router.get("/media", async (req, res) => {
