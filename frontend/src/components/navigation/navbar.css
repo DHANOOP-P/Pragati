@@ -1,0 +1,200 @@
+body.nav-open {
+  overflow: hidden;
+}
+
+.nav-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+}
+
+.nav-sheet-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(215, 181, 109, 0.16), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 0% 100%, rgba(196, 92, 45, 0.18), transparent 55%),
+    #050505;
+  padding: calc(1.1rem + env(safe-area-inset-top, 0px)) 1.35rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.nav-sheet-glow {
+  pointer-events: none;
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  right: -18%;
+  top: -10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(215, 181, 109, 0.2), transparent 70%);
+  filter: blur(8px);
+  animation: nav-drift 14s ease-in-out infinite alternate;
+}
+
+.nav-sheet-glow-b {
+  left: -20%;
+  right: auto;
+  top: auto;
+  bottom: -12%;
+  background: radial-gradient(circle, rgba(196, 92, 45, 0.22), transparent 70%);
+  animation-duration: 18s;
+  animation-direction: alternate-reverse;
+}
+
+.nav-sheet-watermark {
+  pointer-events: none;
+  position: absolute;
+  right: -4%;
+  top: 42%;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 28vw, 9rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  color: rgba(243, 236, 224, 0.035);
+  transform: rotate(-90deg);
+  transform-origin: center;
+  white-space: nowrap;
+}
+
+.nav-sheet-top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+}
+
+.nav-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(243, 236, 224, 0.18);
+  background: rgba(243, 236, 224, 0.03);
+  color: #f3ece0;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.nav-sheet-close-x {
+  font-size: 1.15rem;
+  line-height: 1;
+  color: #d7b56d;
+}
+
+.nav-sheet-links {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 0 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-sheet-link {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr auto;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.72rem 0;
+  border-bottom: 1px solid rgba(243, 236, 224, 0.08);
+  color: #f3ece0;
+  text-decoration: none;
+}
+
+.nav-sheet-index {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(215, 181, 109, 0.7);
+}
+
+.nav-sheet-label {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 9.5vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.nav-sheet-arrow {
+  opacity: 0;
+  transform: translateX(-6px);
+  color: #d7b56d;
+  font-size: 1.35rem;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.nav-sheet-link:active .nav-sheet-arrow,
+.nav-sheet-link.is-active .nav-sheet-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.nav-sheet-link.is-active .nav-sheet-label {
+  color: #d7b56d;
+}
+
+.nav-sheet-link.is-active .nav-sheet-index {
+  color: #c45c2d;
+}
+
+.nav-sheet-foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.2rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(215, 181, 109, 0.22);
+}
+
+.nav-sheet-account {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0 1.1rem;
+  background: #c45c2d;
+  color: #f3ece0;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.nav-sheet-logout {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(243, 236, 224, 0.55);
+}
+
+.nav-sheet-tag {
+  flex-basis: 100%;
+  margin: 0.15rem 0 0;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: rgba(200, 191, 179, 0.72);
+}
+
+@keyframes nav-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-4vw, 3vh, 0) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-sheet-glow {
+    animation: none;
+  }
+}
