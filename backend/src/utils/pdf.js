@@ -84,91 +84,112 @@ export function publicFileUrl(absPath) {
   return `/uploads/${rel}`;
 }
 
-/** Stream a landscape A4 table PDF to an Express response. */
-export function sendTablePdf(res, { title, filename, headers, rows }) {
-  const safeName = String(filename || "pragati-export.pdf").replace(/[^\w.\-]+/g, "_");
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`);
+function cellText(value, max = 42) {
+  const text = String(value ?? "—").replace(/\s+/g, " ").trim() || "—";
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
 
-  const doc = new PDFDocument({
-    size: "A4",
-    layout: "landscape",
-    margin: 36,
-    info: { Title: title || "Pragati export", Author: "Pragati" },
-  });
-  doc.pipe(res);
+function buildTablePdfBuffer({ title, headers, rows }) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({
+      size: "A4",
+      layout: "landscape",
+      margin: 36,
+      autoFirstPage: true,
+      bufferPages: true,
+      info: { Title: title || "Pragati export", Author: "Pragati" },
+    });
+    const chunks = [];
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
 
-  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-  const cols = Array.isArray(headers) ? headers : [];
-  const colCount = Math.max(cols.length, 1);
-  const colW = pageWidth / colCount;
-  const startX = doc.page.margins.left;
-  let y = doc.page.margins.top;
-
-  const drawTitle = () => {
-    doc.fillColor("#111111").fontSize(16).text("PRAGATI", startX, y, { continued: false });
-    doc.fillColor("#666666").fontSize(10).text(title || "Export", startX, y + 20);
-    doc.fillColor("#999999").fontSize(8).text(`Generated ${new Date().toLocaleString("en-IN")}`, startX, y + 34);
-    y += 52;
-  };
-
-  const ensureSpace = (need = 28) => {
+    const cols = Array.isArray(headers) ? headers.map((h) => String(h || "")) : [];
+    const data = Array.isArray(rows) ? rows : [];
+    const pageLeft = doc.page.margins.left;
+    const pageRight = doc.page.width - doc.page.margins.right;
+    const pageWidth = pageRight - pageLeft;
+    const colCount = Math.max(cols.length, 1);
+    const colW = pageWidth / colCount;
+    const rowH = 16;
     const bottom = doc.page.height - doc.page.margins.bottom;
-    if (y + need <= bottom) return;
-    doc.addPage();
-    y = doc.page.margins.top;
-    drawTitle();
-    drawHeaderRow();
-  };
+    let y = doc.page.margins.top;
 
-  const drawHeaderRow = () => {
-    doc.rect(startX, y, pageWidth, 22).fill("#111111");
-    doc.fillColor("#d4af37").fontSize(8);
-    cols.forEach((label, i) => {
-      doc.text(String(label || ""), startX + i * colW + 4, y + 7, {
-        width: colW - 8,
-        height: 12,
-        ellipsis: true,
+    const paintTitle = () => {
+      doc.fillColor("#111111").font("Helvetica-Bold").fontSize(14).text("PRAGATI", pageLeft, y, { lineBreak: false });
+      doc.fillColor("#555555").font("Helvetica").fontSize(10).text(String(title || "Export"), pageLeft, y + 18, { lineBreak: false });
+      doc.fillColor("#888888").fontSize(8).text(`Generated ${new Date().toLocaleString("en-IN")}`, pageLeft, y + 32, {
         lineBreak: false,
       });
-    });
-    y += 26;
-    doc.x = startX;
-    doc.y = y;
-  };
+      y = doc.page.margins.top + 48;
+    };
 
-  const drawRow = (cells, zebra) => {
-    const texts = cols.map((_, i) => String(cells[i] ?? "—"));
-    let rowH = 18;
-    texts.forEach((text) => {
-      const h = doc.heightOfString(text, { width: colW - 8 });
-      rowH = Math.max(rowH, Math.min(h + 8, 54));
-    });
-    ensureSpace(rowH + 2);
-    if (zebra) doc.rect(startX, y, pageWidth, rowH).fill("#f6f1e8");
-    doc.fillColor("#222222").fontSize(7.5);
-    texts.forEach((text, i) => {
-      doc.text(text, startX + i * colW + 4, y + 4, {
-        width: colW - 8,
-        height: rowH - 6,
-        ellipsis: true,
-        lineBreak: false,
+    const paintHeader = () => {
+      doc.save();
+      doc.rect(pageLeft, y, pageWidth, rowH + 4).fill("#111111");
+      doc.fillColor("#d4af37").font("Helvetica-Bold").fontSize(7);
+      cols.forEach((label, i) => {
+        doc.text(cellText(label, 28), pageLeft + i * colW + 3, y + 5, {
+          width: colW - 6,
+          lineBreak: false,
+        });
       });
-    });
-    y += rowH;
-    doc.x = startX;
-    doc.y = y;
-  };
+      doc.restore();
+      y += rowH + 6;
+    };
 
-  drawTitle();
-  drawHeaderRow();
+    const newPage = () => {
+      doc.addPage();
+      y = doc.page.margins.top;
+      paintTitle();
+      paintHeader();
+    };
 
-  const data = Array.isArray(rows) ? rows : [];
-  if (!data.length) {
-    doc.fillColor("#666666").fontSize(10).text("No rows to export.", startX, y + 8);
-  } else {
-    data.forEach((row, idx) => drawRow(row, idx % 2 === 1));
+    paintTitle();
+    paintHeader();
+
+    if (!data.length) {
+      doc.fillColor("#666666").font("Helvetica").fontSize(10).text("No rows to export.", pageLeft, y + 6);
+    } else {
+      data.forEach((row, idx) => {
+        if (y + rowH > bottom) newPage();
+        if (idx % 2 === 1) {
+          doc.save();
+          doc.rect(pageLeft, y, pageWidth, rowH).fill("#f4efe6");
+          doc.restore();
+        }
+        doc.fillColor("#222222").font("Helvetica").fontSize(7);
+        cols.forEach((_, i) => {
+          doc.text(cellText(row?.[i], 36), pageLeft + i * colW + 3, y + 4, {
+            width: colW - 6,
+            lineBreak: false,
+          });
+        });
+        y += rowH;
+      });
+    }
+
+    doc.end();
+  });
+}
+
+/** Build a complete PDF buffer, then send it (avoids corrupt partial downloads). */
+export async function sendTablePdf(res, { title, filename, headers, rows }) {
+  const safeName = String(filename || "pragati-export.pdf").replace(/[^\w.\-]+/g, "_");
+  try {
+    const buffer = await buildTablePdfBuffer({ title, headers, rows });
+    if (!buffer?.length || buffer.slice(0, 4).toString() !== "%PDF") {
+      throw new Error("PDF generation failed");
+    }
+    res.status(200);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Length", String(buffer.length));
+    res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`);
+    res.setHeader("Cache-Control", "no-store");
+    res.end(buffer);
+  } catch (err) {
+    console.error("PDF export failed:", err);
+    if (res.headersSent) return;
+    res.status(500).json({ message: err.message || "Could not create PDF export." });
   }
-
-  doc.end();
 }

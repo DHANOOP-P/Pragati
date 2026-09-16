@@ -232,7 +232,7 @@ router.get("/students/export", async (req, res) => {
   const students = await User.find(filter)
     .select("name email phone college studentClass semester houseName department createdAt")
     .sort({ createdAt: -1 });
-  sendTablePdf(res, {
+  return sendTablePdf(res, {
     title: "Students export",
     filename: "pragati-students.pdf",
     headers: ["Name", "Email", "Phone", "College", "Class", "Semester", "House", "Department", "Signed up"],
