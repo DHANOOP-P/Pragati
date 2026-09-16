@@ -8,6 +8,8 @@ import Registration from "../models/Registration.js";
 import { protect } from "../middleware/auth.js";
 import { completeRegistration, serializeRegistration } from "../utils/completeRegistration.js";
 import { assertServiceAvailable, sendUnavailable } from "../utils/serviceGates.js";
+import User from "../models/User.js";
+import { parseRegistrationDetails, validateRegistrationDetails } from "../utils/registrationDetails.js";
 
 const router = Router();
 
@@ -34,6 +36,10 @@ router.post("/order", protect, async (req, res) => {
     if (!["workshop", "proshow"].includes(itemType)) {
       return res.status(400).json({ message: "Only workshops and proshows are paid" });
     }
+
+    const details = parseRegistrationDetails(req.body?.details || req.body, req.user);
+    const detailError = validateRegistrationDetails(details);
+    if (detailError) return res.status(400).json({ message: detailError });
 
     const item = await loadPaidItem(itemType, itemId);
     if (!item) return res.status(404).json({ message: "Item not found" });
@@ -64,6 +70,23 @@ router.post("/order", protect, async (req, res) => {
       amount: item.price,
       status: "created",
       mock: !razorpayReady(),
+      details: {
+        studentName: details.studentName,
+        email: details.email,
+        phone: details.phone,
+        college: details.college,
+        studentClass: details.studentClass,
+        semester: details.semester,
+        department: details.department,
+      },
+    });
+
+    await User.findByIdAndUpdate(req.user._id, {
+      phone: details.phone,
+      college: details.college,
+      studentClass: details.studentClass,
+      semester: details.semester,
+      department: details.department,
     });
 
     if (!razorpayReady()) {
@@ -168,6 +191,15 @@ router.post("/verify", protect, async (req, res) => {
       item,
       amount: payment.amount,
       payment,
+      extras: {
+        studentName: payment.details?.studentName || req.user.name,
+        email: payment.details?.email || req.user.email,
+        phone: payment.details?.phone || req.user.phone || "",
+        college: payment.details?.college || req.user.college || "",
+        studentClass: payment.details?.studentClass || req.user.studentClass || "",
+        semester: payment.details?.semester || req.user.semester || "",
+        department: payment.details?.department || req.user.department || "",
+      },
     });
 
     item.registeredCount += 1;

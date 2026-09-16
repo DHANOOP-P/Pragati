@@ -15,10 +15,12 @@ const registrationSchema = new mongoose.Schema(
     participationType: { type: String, enum: ["group", "individual", ""], default: "" },
     studentName: { type: String, default: "" },
     studentClass: { type: String, default: "" },
+    semester: { type: String, default: "" },
     houseName: { type: String, default: "" },
     department: { type: String, default: "" },
     phone: { type: String, default: "" },
     email: { type: String, default: "" },
+    college: { type: String, default: "" },
     members: [
       {
         name: { type: String, default: "" },

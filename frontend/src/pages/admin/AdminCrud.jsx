@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import api from "../../api/client";
 import AdminDateField, { toLocalDateTime } from "./AdminDateField";
 import { mediaUrl } from "../../utils/media";
+import {
+  adminDeleteBtn,
+  adminTable,
+  adminTableWrap,
+  adminTd,
+  adminTdMute,
+  adminTh,
+  adminTr,
+} from "./adminTable";
 import "./adminForm.css";
 
 const AdminCrud = ({ title, endpoint, fields, defaults }) => {
@@ -140,30 +149,54 @@ const AdminCrud = ({ title, endpoint, fields, defaults }) => {
           </button>
         </div>
       </form>
-      <div className="mt-8 space-y-3">
-        {items.map((item) => (
-          <div key={item._id} className="flex flex-wrap items-center justify-between gap-3 border border-paper/10 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-              {imageSrc(item) ? (
-                <img src={mediaUrl(imageSrc(item), 96)} alt="" className="h-12 w-12 shrink-0 object-cover" />
-              ) : null}
-              <p className="truncate">{item.title || item.studentName || item.eventTitle}</p>
-            </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => edit(item)} className="text-gold">Edit</button>
-              <button
-                type="button"
-                onClick={async () => {
-                  await api.delete(`${endpoint}/${item._id}`);
-                  load();
-                }}
-                className="text-ember"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="mt-8">
+        <p className="mb-3 text-sm text-mute">{items.length} item{items.length === 1 ? "" : "s"}</p>
+        <div className={adminTableWrap}>
+          <table className={`${adminTable} min-w-[640px]`}>
+            <thead>
+              <tr className="border-b border-paper/15 bg-paper/[0.03]">
+                <th className={adminTh}>Item</th>
+                <th className={adminTh}>Preview</th>
+                <th className={adminTh}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item._id} className={adminTr}>
+                  <td className={`${adminTd} font-medium`}>
+                    {item.title || item.studentName || item.eventTitle || "—"}
+                  </td>
+                  <td className={adminTdMute}>
+                    {imageSrc(item) ? (
+                      <img src={mediaUrl(imageSrc(item), 96)} alt="" className="h-12 w-12 object-cover" />
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className={`${adminTd} text-right`}>
+                    <div className="flex justify-end gap-4">
+                      <button type="button" onClick={() => edit(item)} className="text-[11px] uppercase tracking-[0.2em] text-gold">
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!window.confirm("Delete this item?")) return;
+                          await api.delete(`${endpoint}/${item._id}`);
+                          load();
+                        }}
+                        className={adminDeleteBtn}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!items.length && <p className="px-4 py-6 text-sm text-mute">No items yet.</p>}
+        </div>
       </div>
     </div>
   );

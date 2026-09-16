@@ -13,6 +13,15 @@ const paymentSchema = new mongoose.Schema(
     status: { type: String, enum: ["created", "paid", "failed"], default: "created" },
     invoicePath: { type: String, default: "" },
     mock: { type: Boolean, default: false },
+    details: {
+      studentName: { type: String, default: "" },
+      email: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      college: { type: String, default: "" },
+      studentClass: { type: String, default: "" },
+      semester: { type: String, default: "" },
+      department: { type: String, default: "" },
+    },
   },
   { timestamps: true }
 );

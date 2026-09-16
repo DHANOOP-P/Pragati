@@ -7,7 +7,9 @@ import { protect } from "../middleware/auth.js";
 import { isCollegeEmail } from "../utils/collegeEmail.js";
 import { completeRegistration, serializeRegistration } from "../utils/completeRegistration.js";
 import { ARTS_KIND_LIMIT, artsQuotaForUser } from "../utils/artsQuota.js";
-import { cleanMember, cleanText, HOUSE_NAMES } from "../utils/studentMeta.js";
+import { cleanMember } from "../utils/studentMeta.js";
+import House from "../models/House.js";
+import { parseRegistrationDetails, validateRegistrationDetails } from "../utils/registrationDetails.js";
 import { assertServiceAvailable, sendUnavailable } from "../utils/serviceGates.js";
 
 const router = Router();
@@ -55,29 +57,37 @@ router.post("/arts/:id", protect, async (req, res) => {
       });
     }
 
-    const studentClass = cleanText(req.body?.studentClass);
-    const houseName = cleanText(req.body?.houseName);
-    const department = cleanText(req.body?.department).toUpperCase();
-    const phone = cleanText(req.body?.phone || req.user.phone);
-    if (!studentClass || !houseName || !department || !phone) {
-      return res.status(400).json({ message: "Class, house, department and phone are required." });
-    }
-    if (!HOUSE_NAMES.includes(houseName)) {
+    const details = parseRegistrationDetails(req.body, req.user);
+    const invalid = validateRegistrationDetails(details, { requireHouse: true });
+    if (invalid) return res.status(400).json({ message: invalid });
+
+    const { studentClass, houseName, department, phone, college, semester, studentName, email } = details;
+    const houseOk = await House.findOne({
+      name: new RegExp(`^${houseName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
+    });
+    if (!houseOk) {
       return res.status(400).json({ message: "Choose a valid house." });
     }
 
     let members = [];
     if (kind === "group") {
-      members = (Array.isArray(req.body?.members) ? req.body.members : []).map(cleanMember).filter((m) => m.name);
+      members = (Array.isArray(req.body?.members) ? req.body.members : []).map(cleanMember);
       if (!members.length) {
         return res.status(400).json({ message: "Add at least one group member besides the leader." });
       }
-      if (members.some((m) => !m.studentClass || !m.department)) {
-        return res.status(400).json({ message: "Each member needs a class and department." });
+      if (members.some((m) => !m.name || !m.studentClass || !m.department)) {
+        return res.status(400).json({ message: "Each group member needs name, class and department." });
       }
     }
 
-    await User.findByIdAndUpdate(req.user._id, { studentClass, houseName, department, phone });
+    await User.findByIdAndUpdate(req.user._id, {
+      studentClass,
+      houseName,
+      department,
+      phone,
+      college,
+      semester,
+    });
 
     const registration = await completeRegistration({
       user: req.user,
@@ -86,12 +96,14 @@ router.post("/arts/:id", protect, async (req, res) => {
       amount: 0,
       extras: {
         participationType: kind,
-        studentName: req.user.name,
+        studentName,
         studentClass,
+        semester,
         houseName,
         department,
         phone,
-        email: req.user.email,
+        email,
+        college,
         members,
       },
     });

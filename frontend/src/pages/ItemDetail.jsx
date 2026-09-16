@@ -10,6 +10,7 @@ import { isServiceOpen } from "../utils/serviceGates";
 import { FEATURED_PROSHOWS } from "../data/featuredCatalog";
 import ErrorState from "../components/ui/ErrorState";
 import ArtsRegisterForm from "../components/events/ArtsRegisterForm";
+import PaidRegisterForm from "../components/events/PaidRegisterForm";
 import FormBackdrop from "../components/forms/FormBackdrop";
 
 const ItemDetail = ({ type }) => {
@@ -21,8 +22,8 @@ const ItemDetail = ({ type }) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [confirmPay, setConfirmPay] = useState(false);
   const [artsForm, setArtsForm] = useState(false);
+  const [paidForm, setPaidForm] = useState(false);
   const [ticket, setTicket] = useState(null);
   const [quota, setQuota] = useState(null);
   const endpoint = type === "arts" ? `/events/${id}` : type === "workshop" ? `/workshops/${id}` : `/proshows/${id}`;
@@ -78,17 +79,17 @@ const ItemDetail = ({ type }) => {
       return;
     }
     if (type === "arts") {
-    if (!isCollegeEmail(user.email)) {
-      setError("Arts events are only for GEC Wayanad students. Sign in with a college mail like name_21b410cs@gecwyd.ac.in.");
-      return;
-    }
+      if (!isCollegeEmail(user.email)) {
+        setError("Arts events are only for GEC Wayanad students. Sign in with a college mail like name_21b410cs@gecwyd.ac.in.");
+        return;
+      }
       setArtsForm(true);
       return;
     }
-    if (!confirmPay) {
-      setConfirmPay(true);
-      return;
-    }
+    setPaidForm(true);
+  };
+
+  const submitPaid = async (details) => {
     const open = await isServiceOpen(type);
     if (!open) {
       navigate("/unavailable", { state: { service: type } });
@@ -102,10 +103,11 @@ const ItemDetail = ({ type }) => {
         itemType: type,
         itemId: id,
         user,
+        details,
         onSuccess: (data) => {
           setMessage(data.message);
           if (data.registration) setTicket(data.registration);
-          setConfirmPay(false);
+          setPaidForm(false);
         },
       });
     } catch (err) {
@@ -237,35 +239,14 @@ const ItemDetail = ({ type }) => {
               onCancel={() => setArtsForm(false)}
               onSubmit={submitArts}
             />
-          ) : confirmPay ? (
-            <div className="mt-10 border border-paper/15 p-6">
-              <p className="text-[11px] uppercase tracking-[0.3em] text-ember">Confirm pay</p>
-              <p className="mt-3 font-serif text-2xl italic">
-                Pay ₹{item.price} for {item.title}?
-              </p>
-              <p className="mt-2 text-sm text-mute">
-                After payment a ticket is created and mailed to {user?.email}.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={register}
-                  data-cursor="GO"
-                  className="bg-ember px-10 py-4 text-[11px] uppercase tracking-[0.32em] disabled:opacity-40"
-                >
-                  {busy ? "Working…" : "Pay now"}
-                </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => setConfirmPay(false)}
-                  className="px-8 py-4 text-[11px] uppercase tracking-[0.28em] text-mute"
-                >
-                  Back
-                </button>
-              </div>
-            </div>
+          ) : paidForm && paid ? (
+            <PaidRegisterForm
+              item={item}
+              user={user}
+              busy={busy}
+              onCancel={() => setPaidForm(false)}
+              onSubmit={submitPaid}
+            />
           ) : (
             <button
               type="button"

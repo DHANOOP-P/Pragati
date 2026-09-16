@@ -77,11 +77,42 @@ router.put("/points", async (req, res) => {
   const updated = [];
   for (const row of rows) {
     if (!row?._id) continue;
-    const points = Math.max(0, Number(row.points) || 0);
-    const house = await House.findByIdAndUpdate(row._id, { points }, { new: true });
+    const patch = {};
+    if (row.points != null) patch.points = Math.max(0, Number(row.points) || 0);
+    if (row.name != null) {
+      const name = String(row.name).trim();
+      if (!name) continue;
+      const taken = await House.findOne({ name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), _id: { $ne: row._id } });
+      if (taken) return res.status(409).json({ message: `Category "${name}" already exists` });
+      patch.name = name;
+    }
+    if (row.order != null) patch.order = Number(row.order) || 0;
+    if (!Object.keys(patch).length) continue;
+    const house = await House.findByIdAndUpdate(row._id, patch, { new: true });
     if (house) updated.push(house);
   }
-  res.json(updated.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)));
+  const houses = await House.find().sort({ order: 1, name: 1 });
+  res.json(houses);
+});
+
+router.post("/points", async (req, res) => {
+  const name = String(req.body?.name || "").trim();
+  if (!name) return res.status(400).json({ message: "Category name is required" });
+  const exists = await House.findOne({ name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") });
+  if (exists) return res.status(409).json({ message: "Category already exists" });
+  const maxOrder = await House.findOne().sort({ order: -1 }).select("order");
+  const house = await House.create({
+    name,
+    points: Math.max(0, Number(req.body?.points) || 0),
+    order: (maxOrder?.order ?? 0) + 1,
+  });
+  res.status(201).json(house);
+});
+
+router.delete("/points/:id", async (req, res) => {
+  const house = await House.findByIdAndDelete(req.params.id);
+  if (!house) return res.status(404).json({ message: "Category not found" });
+  res.json({ ok: true });
 });
 
 function registrationFilter(query) {
@@ -229,6 +260,12 @@ router.delete("/students/:id", async (req, res) => {
 
 router.get("/registrations", async (req, res) => {
   res.json(await listRegistrations(req.query));
+});
+
+router.delete("/registrations/:id", async (req, res) => {
+  const row = await Registration.findByIdAndDelete(req.params.id);
+  if (!row) return res.status(404).json({ message: "Registration not found" });
+  res.json({ ok: true });
 });
 
 router.get("/registrations/export", async (req, res) => {

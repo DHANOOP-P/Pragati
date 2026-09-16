@@ -11,8 +11,8 @@ function loadRazorpay() {
   });
 }
 
-export async function startPaidCheckout({ itemType, itemId, user, onSuccess }) {
-  const { data: order } = await api.post("/payments/order", { itemType, itemId });
+export async function startPaidCheckout({ itemType, itemId, user, details, onSuccess }) {
+  const { data: order } = await api.post("/payments/order", { itemType, itemId, details });
 
   if (order.mock) {
     const ok = window.confirm(`Confirm test payment for ${order.itemTitle} — ₹${order.amount / 100}?`);
@@ -35,7 +35,7 @@ export async function startPaidCheckout({ itemType, itemId, user, onSuccess }) {
     name: "Pragati",
     description: order.itemTitle,
     order_id: order.orderId,
-    prefill: { name: user?.name, email: user?.email },
+    prefill: { name: details?.studentName || user?.name, email: details?.email || user?.email, contact: details?.phone },
     theme: { color: "#d7b56d" },
     async handler(response) {
       const { data } = await api.post("/payments/verify", {
