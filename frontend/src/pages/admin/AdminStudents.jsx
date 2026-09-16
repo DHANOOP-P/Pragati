@@ -127,38 +127,60 @@ const AdminStudents = () => {
         {loading ? "Loading…" : `${items.length} student${items.length === 1 ? "" : "s"}`}
       </p>
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="text-gold">
-            <tr>
-              <th className="py-3">Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>College</th>
-              <th>Class</th>
-              <th>Semester</th>
-              <th>Department</th>
-              <th>Signed up</th>
-              <th />
+      <div className="mt-4 overflow-x-auto border border-paper/10">
+        <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-paper/15 bg-paper/[0.03]">
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Name
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Email
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Phone
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                College
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Class
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Semester
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Department
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Signed up
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-normal uppercase tracking-[0.18em] text-gold">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             {items.map((s) => (
-              <tr key={s._id} className="border-t border-paper/10">
-                <td className="py-3">{s.name || "—"}</td>
-                <td>{s.email || "—"}</td>
-                <td>{s.phone || "—"}</td>
-                <td>{s.college || "—"}</td>
-                <td>{s.studentClass ? `Year ${s.studentClass}` : "—"}</td>
-                <td>{s.semester || "—"}</td>
-                <td>{s.department || "—"}</td>
-                <td>{fmtWhen(s.createdAt)}</td>
-                <td className="text-right">
+              <tr key={s._id} className="border-b border-paper/10 align-top last:border-b-0 hover:bg-paper/[0.02]">
+                <td className="max-w-[10rem] px-4 py-3.5 font-medium text-paper">{s.name || "—"}</td>
+                <td className="max-w-[16rem] break-all px-4 py-3.5 text-mute">{s.email || "—"}</td>
+                <td className="whitespace-nowrap px-4 py-3.5 tabular-nums text-paper">{s.phone || "—"}</td>
+                <td className="max-w-[14rem] px-4 py-3.5 text-mute" title={s.college || ""}>
+                  {s.college || "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3.5 text-paper">
+                  {s.studentClass ? `Year ${s.studentClass}` : "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3.5 text-paper">{s.semester || "—"}</td>
+                <td className="whitespace-nowrap px-4 py-3.5 text-paper">{s.department || "—"}</td>
+                <td className="whitespace-nowrap px-4 py-3.5 text-mute">{fmtWhen(s.createdAt)}</td>
+                <td className="whitespace-nowrap px-4 py-3.5 text-right">
                   <button
                     type="button"
                     disabled={busyId === s._id}
                     onClick={() => remove(s._id, s.name)}
-                    className="text-ember disabled:opacity-40"
+                    className="text-[11px] uppercase tracking-[0.2em] text-ember disabled:opacity-40"
                   >
                     {busyId === s._id ? "…" : "Delete"}
                   </button>
@@ -167,7 +189,7 @@ const AdminStudents = () => {
             ))}
           </tbody>
         </table>
-        {!loading && !items.length && <p className="mt-6 text-sm text-mute">No students found.</p>}
+        {!loading && !items.length && <p className="px-4 py-6 text-sm text-mute">No students found.</p>}
       </div>
     </div>
   );
